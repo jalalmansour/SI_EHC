@@ -26,7 +26,7 @@ import {
   BookOutlined,
   StarOutlined,
 } from "@ant-design/icons"
-import { updateProfile } from "../redux/slices/authSlice"
+import { updateUserProfile } from "../redux/slices/authSlice"
 
 const { TextArea } = Input
 
@@ -71,7 +71,7 @@ const ProfilePage = () => {
 
   const handleSubmit = async (values) => {
     try {
-      await dispatch(updateProfile(values)).unwrap()
+      await dispatch(updateUserProfile(values)).unwrap()
       message.success("Profil mis à jour avec succès")
     } catch (error) {
       message.error("Erreur lors de la mise à jour du profil")
