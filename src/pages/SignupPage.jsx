@@ -29,7 +29,7 @@ import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons"
-import { registerUser, clearError } from "../redux/slices/authSlice"
+import { clearError } from "../redux/slices/authSlice"
 
 const { Title, Text, Paragraph } = Typography
 const { Option } = Select
@@ -124,15 +124,15 @@ const SignupPage = () => {
       const values = await form.validateFields()
       const finalData = { ...formData, ...values }
 
-      dispatch(clearError())
-      const result = await dispatch(registerUser(finalData))
+      // dispatch(clearError())
+      // const result = await dispatch(registerUser(finalData))
 
-      if (result.success) {
-        message.success("Inscription réussie ! Bienvenue sur INGÉNIA !")
-        navigate("/welcome")
-      } else {
-        message.error(result.error)
-      }
+      // if (result.success) {
+      //   message.success("Inscription réussie ! Bienvenue sur INGÉNIA !")
+      //   navigate("/welcome")
+      // } else {
+      //   message.error(result.error)
+      // }
     } catch (error) {
       message.error("Erreur lors de l'inscription")
     }
