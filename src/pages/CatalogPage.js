@@ -30,10 +30,9 @@ import {
 import { useSelector, useDispatch } from "react-redux"
 import DashboardLayout from "../layouts/DashboardLayout"
 import {
-  fetchTrainingsThunk,
-  createTrainingThunk,
-  updateTrainingThunk,
-  deleteTrainingThunk,
+  fetchCatalogItems,
+  createCatalogItem,
+  updateCatalogItemThunk,
 } from "../redux/thunks/catalogThunks"
 
 const { Title, Text } = Typography
@@ -70,7 +69,7 @@ const CatalogPage = () => {
 
   useEffect(() => {
     dispatch(
-      fetchTrainingsThunk({
+      fetchCatalogItems({
         page: 1,
         limit: 10,
         search: searchText,
@@ -111,7 +110,7 @@ const CatalogPage = () => {
 
   const handleDeleteTraining = async (id) => {
     try {
-      await dispatch(deleteTrainingThunk(id))
+      // await dispatch(deleteTrainingThunk(id))
       message.success("Formation supprimée avec succès")
     } catch (error) {
       message.error("Erreur lors de la suppression")
@@ -129,10 +128,10 @@ const CatalogPage = () => {
       }
 
       if (editingTraining) {
-        await dispatch(updateTrainingThunk({ id: editingTraining.id, data: formattedValues }))
+        await dispatch(updateCatalogItemThunk({ id: editingTraining.id, data: formattedValues }))
         message.success("Formation mise à jour avec succès")
       } else {
-        await dispatch(createTrainingThunk(formattedValues))
+        await dispatch(createCatalogItem(formattedValues))
         message.success("Formation créée avec succès")
       }
 
