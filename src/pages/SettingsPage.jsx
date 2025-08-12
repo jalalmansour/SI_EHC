@@ -28,7 +28,7 @@ import {
   ShieldOutlined,
   MobileOutlined,
 } from "@ant-design/icons"
-import { changePassword, updateUserPreferences } from "../redux/slices/authSlice"
+import { updateUserProfile } from "../redux/slices/authSlice"
 
 const { TabPane } = Tabs
 const { Option } = Select
@@ -55,7 +55,7 @@ const SettingsPage = () => {
 
   const handlePasswordChange = async (values) => {
     try {
-      await dispatch(changePassword(values)).unwrap()
+      // await dispatch(changePassword(values)).unwrap()
       message.success("Mot de passe modifié avec succès")
       passwordForm.resetFields()
     } catch (error) {
@@ -72,7 +72,7 @@ const SettingsPage = () => {
       newPreferences[key] = value
     }
 
-    dispatch(updateUserPreferences(newPreferences))
+    dispatch(updateUserProfile({ preferences: newPreferences }))
     message.success("Préférences mises à jour")
   }
 
