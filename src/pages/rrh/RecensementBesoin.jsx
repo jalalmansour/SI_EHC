@@ -34,15 +34,15 @@ import {
   CopyOutlined,
 } from "@ant-design/icons"
 
-// Import the new components
-import CatalogVisualizationModal from "../components/catalog/CatalogVisualizationModal"
-import PredefinedCatalog from "../components/catalog/PredefinedCatalog"
+// Import the new components with corrected paths
+import CatalogVisualizationModal from "../../components/catalog/CatalogVisualizationModal"
+import PredefinedCatalog from "../../components/catalog/PredefinedCatalog"
 import {
   FinalDistributionModal,
   HRDistributionModal,
   EmployeeDistributionModal,
-} from "../components/catalog/DistributionModals"
-import EmployeeValidationInterface from "../components/catalog/EmployeeValidationInterface"
+} from "../../components/catalog/DistributionModals"
+import EmployeeValidationInterface from "../../components/catalog/EmployeeValidationInterface"
 
 const { Title, Text } = Typography
 const { Panel } = Collapse
