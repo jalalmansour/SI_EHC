@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { Card, Form, Input, Button, Checkbox, message, Typography, Divider, Alert, Row, Col } from "antd"
 import { UserOutlined, LockOutlined, EyeInvisibleOutlined, EyeTwoTone, ArrowLeftOutlined } from "@ant-design/icons"
-import { loginUser, clearError } from "../redux/slices/authSlice"
+import { loginThunk } from "../redux/slices/authSlice"
 
 const { Title, Text } = Typography
 
@@ -56,19 +56,12 @@ const LoginPage = () => {
   ]
 
   const handleLogin = async (values) => {
-    dispatch(clearError())
-
     try {
-      const result = await dispatch(loginUser(values))
-
-      if (result.success) {
-        message.success(`Connexion réussie ! Bienvenue ${result.user.firstName}`)
-        navigate("/welcome")
-      } else {
-        message.error(result.error)
-      }
+      const result = await dispatch(loginThunk(values)).unwrap()
+      message.success(`Connexion réussie ! Bienvenue ${result.user.firstName}`)
+      navigate("/welcome")
     } catch (err) {
-      message.error("Erreur de connexion")
+      message.error(err || "Erreur de connexion")
     }
   }
 
@@ -81,22 +74,17 @@ const LoginPage = () => {
   }
 
   const handleQuickLogin = async (account) => {
-    dispatch(clearError())
-
     try {
       const result = await dispatch(
-        loginUser({
+        loginThunk({
           email: account.email,
           password: account.password,
         }),
-      )
-
-      if (result.success) {
-        message.success(`Connexion rapide réussie en tant que ${account.role}`)
-        navigate("/welcome")
-      }
+      ).unwrap()
+      message.success(`Connexion rapide réussie en tant que ${account.role}`)
+      navigate("/welcome")
     } catch (err) {
-      message.error("Erreur de connexion")
+      message.error(err || "Erreur de connexion")
     }
   }
 
