@@ -108,19 +108,26 @@ export default function RegisterPage() {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center text-teal-600 hover:text-teal-700 mb-4">
+          <Link
+            href="/"
+            className="inline-flex items-center text-teal-600 hover:text-teal-700 mb-4"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour à l'accueil
           </Link>
 
           <div className="flex items-center justify-center mb-4">
             <div className="bg-white rounded-full p-3 shadow-lg">
-              <Rocket className="h-8 w-8 text-[#6C5CE7]" />
+              <img className="w-20" src="./images/logo.png" alt="Logo" />
             </div>
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Créer un compte INGÉNIA</h1>
-          <p className="text-gray-600">Rejoignez la plateforme d'ingénierie de formation</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Demander un devis SI EHC
+          </h1>
+          <p className="text-gray-600">
+            Rejoignez la plateforme d'ingénierie de formation
+          </p>
         </div>
 
         {/* Progress Steps */}
@@ -129,7 +136,9 @@ export default function RegisterPage() {
             <div key={step.id} className="flex items-center">
               <div
                 className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                  currentStep >= step.id ? "bg-teal-600 border-teal-600 text-white" : "border-gray-300 text-gray-400"
+                  currentStep >= step.id
+                    ? "bg-teal-600 border-teal-600 text-white"
+                    : "border-gray-300 text-gray-400"
                 }`}
               >
                 {currentStep > step.id ? (
@@ -139,7 +148,11 @@ export default function RegisterPage() {
                 )}
               </div>
               {index < steps.length - 1 && (
-                <div className={`w-16 h-0.5 mx-2 ${currentStep > step.id ? "bg-teal-600" : "bg-gray-300"}`} />
+                <div
+                  className={`w-16 h-0.5 mx-2 ${
+                    currentStep > step.id ? "bg-teal-600" : "bg-gray-300"
+                  }`}
+                />
               )}
             </div>
           ))}
@@ -148,10 +161,16 @@ export default function RegisterPage() {
         <div className="flex items-center justify-center mb-6">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
-              <span className={`text-sm font-medium ${currentStep >= step.id ? "text-teal-600" : "text-gray-400"}`}>
+              <span
+                className={`text-sm font-medium ${
+                  currentStep >= step.id ? "text-teal-600" : "text-gray-400"
+                }`}
+              >
                 {step.title}
               </span>
-              {index < steps.length - 1 && <span className="mx-4 text-gray-300">•</span>}
+              {index < steps.length - 1 && (
+                <span className="mx-4 text-gray-300">•</span>
+              )}
             </div>
           ))}
         </div>
@@ -166,12 +185,19 @@ export default function RegisterPage() {
                   <User className="h-5 w-5 text-teal-600 mr-2" />
                   <h2 className="text-xl font-semibold">Sélection du profil</h2>
                 </div>
-                <p className="text-gray-600 mb-6">Choisissez le type de compte qui correspond à votre rôle</p>
+                <p className="text-gray-600 mb-6">
+                  Choisissez le type de compte qui correspond à votre rôle
+                </p>
 
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="userType">Type d'utilisateur *</Label>
-                    <Select value={formData.userType} onValueChange={(value) => updateFormData("userType", value)}>
+                    <Select
+                      value={formData.userType}
+                      onValueChange={(value) =>
+                        updateFormData("userType", value)
+                      }
+                    >
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Sélectionnez votre profil" />
                       </SelectTrigger>
@@ -193,9 +219,13 @@ export default function RegisterPage() {
               <div>
                 <div className="flex items-center mb-6">
                   <User className="h-5 w-5 text-teal-600 mr-2" />
-                  <h2 className="text-xl font-semibold">Informations personnelles</h2>
+                  <h2 className="text-xl font-semibold">
+                    Informations personnelles
+                  </h2>
                 </div>
-                <p className="text-gray-600 mb-6">Renseignez vos informations personnelles et de connexion</p>
+                <p className="text-gray-600 mb-6">
+                  Renseignez vos informations personnelles et de connexion
+                </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 space-y-4 md:space-y-0">
                   <div>
@@ -204,7 +234,9 @@ export default function RegisterPage() {
                       id="firstName"
                       placeholder="Votre prénom"
                       value={formData.firstName}
-                      onChange={(e) => updateFormData("firstName", e.target.value)}
+                      onChange={(e) =>
+                        updateFormData("firstName", e.target.value)
+                      }
                       className="mt-1"
                     />
                   </div>
@@ -215,7 +247,9 @@ export default function RegisterPage() {
                       id="lastName"
                       placeholder="Votre nom"
                       value={formData.lastName}
-                      onChange={(e) => updateFormData("lastName", e.target.value)}
+                      onChange={(e) =>
+                        updateFormData("lastName", e.target.value)
+                      }
                       className="mt-1"
                     />
                   </div>
@@ -242,30 +276,6 @@ export default function RegisterPage() {
                       className="mt-1"
                     />
                   </div>
-
-                  <div>
-                    <Label htmlFor="password">Mot de passe *</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Minimum 8 caractères"
-                      value={formData.password}
-                      onChange={(e) => updateFormData("password", e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirmer le mot de passe *</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      placeholder="Répétez le mot de passe"
-                      value={formData.confirmPassword}
-                      onChange={(e) => updateFormData("confirmPassword", e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
                 </div>
               </div>
             )}
@@ -275,9 +285,13 @@ export default function RegisterPage() {
               <div>
                 <div className="flex items-center mb-6">
                   <Briefcase className="h-5 w-5 text-teal-600 mr-2" />
-                  <h2 className="text-xl font-semibold">Informations professionnelles</h2>
+                  <h2 className="text-xl font-semibold">
+                    Informations professionnelles
+                  </h2>
                 </div>
-                <p className="text-gray-600 mb-6">Complétez vos informations professionnelles</p>
+                <p className="text-gray-600 mb-6">
+                  Complétez vos informations professionnelles
+                </p>
 
                 <div className="space-y-4">
                   <div>
@@ -286,7 +300,9 @@ export default function RegisterPage() {
                       id="company"
                       placeholder="Nom de votre entreprise"
                       value={formData.company}
-                      onChange={(e) => updateFormData("company", e.target.value)}
+                      onChange={(e) =>
+                        updateFormData("company", e.target.value)
+                      }
                       className="mt-1"
                     />
                   </div>
@@ -298,7 +314,9 @@ export default function RegisterPage() {
                         id="department"
                         placeholder="RH, IT, Commercial..."
                         value={formData.department}
-                        onChange={(e) => updateFormData("department", e.target.value)}
+                        onChange={(e) =>
+                          updateFormData("department", e.target.value)
+                        }
                         className="mt-1"
                       />
                     </div>
@@ -309,7 +327,9 @@ export default function RegisterPage() {
                         id="employeeId"
                         placeholder="Identifiant interne"
                         value={formData.employeeId}
-                        onChange={(e) => updateFormData("employeeId", e.target.value)}
+                        onChange={(e) =>
+                          updateFormData("employeeId", e.target.value)
+                        }
                         className="mt-1"
                       />
                     </div>
@@ -321,7 +341,9 @@ export default function RegisterPage() {
                       id="position"
                       placeholder="Votre fonction dans l'entreprise"
                       value={formData.position}
-                      onChange={(e) => updateFormData("position", e.target.value)}
+                      onChange={(e) =>
+                        updateFormData("position", e.target.value)
+                      }
                       className="mt-1"
                     />
                   </div>
@@ -332,7 +354,9 @@ export default function RegisterPage() {
                       id="experience"
                       placeholder="Décrivez votre expérience dans le domaine de la formation..."
                       value={formData.experience}
-                      onChange={(e) => updateFormData("experience", e.target.value)}
+                      onChange={(e) =>
+                        updateFormData("experience", e.target.value)
+                      }
                       className="mt-1"
                       rows={3}
                     />
@@ -351,7 +375,9 @@ export default function RegisterPage() {
                           id="address"
                           placeholder="Numéro et nom de rue"
                           value={formData.address}
-                          onChange={(e) => updateFormData("address", e.target.value)}
+                          onChange={(e) =>
+                            updateFormData("address", e.target.value)
+                          }
                           className="mt-1"
                         />
                       </div>
@@ -363,7 +389,9 @@ export default function RegisterPage() {
                             id="postalCode"
                             placeholder="75001"
                             value={formData.postalCode}
-                            onChange={(e) => updateFormData("postalCode", e.target.value)}
+                            onChange={(e) =>
+                              updateFormData("postalCode", e.target.value)
+                            }
                             className="mt-1"
                           />
                         </div>
@@ -374,21 +402,30 @@ export default function RegisterPage() {
                             id="city"
                             placeholder="Paris"
                             value={formData.city}
-                            onChange={(e) => updateFormData("city", e.target.value)}
+                            onChange={(e) =>
+                              updateFormData("city", e.target.value)
+                            }
                             className="mt-1"
                           />
                         </div>
 
                         <div>
                           <Label htmlFor="country">Pays</Label>
-                          <Select value={formData.country} onValueChange={(value) => updateFormData("country", value)}>
+                          <Select
+                            value={formData.country}
+                            onValueChange={(value) =>
+                              updateFormData("country", value)
+                            }
+                          >
                             <SelectTrigger className="mt-1">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="France">France</SelectItem>
                               <SelectItem value="Belgium">Belgique</SelectItem>
-                              <SelectItem value="Switzerland">Suisse</SelectItem>
+                              <SelectItem value="Switzerland">
+                                Suisse
+                              </SelectItem>
                               <SelectItem value="Canada">Canada</SelectItem>
                             </SelectContent>
                           </Select>
@@ -407,17 +444,24 @@ export default function RegisterPage() {
                   <CheckCircle className="h-5 w-5 text-teal-600 mr-2" />
                   <h2 className="text-xl font-semibold">Finalisation</h2>
                 </div>
-                <p className="text-gray-600 mb-6">Vérifiez vos informations et finalisez votre inscription</p>
+                <p className="text-gray-600 mb-6">
+                  Vérifiez vos informations et finalisez votre inscription
+                </p>
 
                 <div className="space-y-6">
                   {/* Registration Summary */}
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="font-medium mb-3">Récapitulatif de votre inscription</h3>
+                    <h3 className="font-medium mb-3">
+                      Récapitulatif de votre inscription
+                    </h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span>Type de compte:</span>
                         <span className="font-medium">
-                          {userTypes.find((t) => t.value === formData.userType)?.label}
+                          {
+                            userTypes.find((t) => t.value === formData.userType)
+                              ?.label
+                          }
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -439,16 +483,21 @@ export default function RegisterPage() {
 
                   {/* Communication Preferences */}
                   <div>
-                    <h3 className="font-medium mb-3">Préférences de communication</h3>
+                    <h3 className="font-medium mb-3">
+                      Préférences de communication
+                    </h3>
                     <div className="space-y-3">
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="notifications"
                           checked={formData.notifications}
-                          onCheckedChange={(checked) => updateFormData("notifications", checked as boolean)}
+                          onCheckedChange={(checked) =>
+                            updateFormData("notifications", checked as boolean)
+                          }
                         />
                         <Label htmlFor="notifications" className="text-sm">
-                          Recevoir les notifications importantes (formations, évaluations, etc.)
+                          Recevoir les notifications importantes (formations,
+                          évaluations, etc.)
                         </Label>
                       </div>
 
@@ -456,10 +505,13 @@ export default function RegisterPage() {
                         <Checkbox
                           id="newsletter"
                           checked={formData.newsletter}
-                          onCheckedChange={(checked) => updateFormData("newsletter", checked as boolean)}
+                          onCheckedChange={(checked) =>
+                            updateFormData("newsletter", checked as boolean)
+                          }
                         />
                         <Label htmlFor="newsletter" className="text-sm">
-                          S'abonner à la newsletter INGÉNIA (nouveautés, conseils formation)
+                          S'abonner à la newsletter INGÉNIA (nouveautés,
+                          conseils formation)
                         </Label>
                       </div>
                     </div>
@@ -470,7 +522,9 @@ export default function RegisterPage() {
                     <Checkbox
                       id="acceptTerms"
                       checked={formData.acceptTerms}
-                      onCheckedChange={(checked) => updateFormData("acceptTerms", checked as boolean)}
+                      onCheckedChange={(checked) =>
+                        updateFormData("acceptTerms", checked as boolean)
+                      }
                       className="mt-1"
                     />
                     <Label htmlFor="acceptTerms" className="text-sm">
@@ -491,13 +545,21 @@ export default function RegisterPage() {
 
             {/* Navigation Buttons */}
             <div className="flex justify-between items-center mt-8 pt-6 border-t">
-              <Button variant="ghost" onClick={prevStep} disabled={currentStep === 1} className="flex items-center">
+              <Button
+                variant="ghost"
+                onClick={prevStep}
+                disabled={currentStep === 1}
+                className="flex items-center"
+              >
                 Précédent
               </Button>
 
               <div className="flex items-center space-x-4">
                 {currentStep < 4 && (
-                  <Link href="/login" className="text-sm text-gray-600 hover:text-gray-800">
+                  <Link
+                    href="/login"
+                    className="text-sm text-gray-600 hover:text-gray-800"
+                  >
                     Déjà un compte ?
                   </Link>
                 )}
@@ -508,8 +570,12 @@ export default function RegisterPage() {
                     disabled={
                       (currentStep === 1 && !formData.userType) ||
                       (currentStep === 2 &&
-                        (!formData.firstName || !formData.lastName || !formData.email || !formData.password)) ||
-                      (currentStep === 3 && (!formData.company || !formData.position))
+                        (!formData.firstName ||
+                          !formData.lastName ||
+                          !formData.email ||
+                          !formData.password)) ||
+                      (currentStep === 3 &&
+                        (!formData.company || !formData.position))
                     }
                     className="bg-teal-600 hover:bg-teal-700"
                   >
@@ -533,12 +599,15 @@ export default function RegisterPage() {
         <div className="text-center mt-6">
           <p className="text-sm text-gray-600">
             Besoin d'aide ? Contactez notre support à{" "}
-            <a href="mailto:support@ingenia.fr" className="text-teal-600 hover:underline">
+            <a
+              href="mailto:support@ingenia.fr"
+              className="text-teal-600 hover:underline"
+            >
               support@ingenia.fr
             </a>
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
