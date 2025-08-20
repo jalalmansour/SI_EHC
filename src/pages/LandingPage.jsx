@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, memo, lazy, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import {
@@ -66,6 +67,7 @@ const LoadingSpinner = () => (
 );
 
 const LandingPage = memo(({ onShowLogin, onShowSignup }) => {
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [heroRef, heroInView] = useInView({ threshold: 0.1, triggerOnce: true });
   const [featuresRef, featuresInView] = useInView({ threshold: 0.1, triggerOnce: true });
@@ -78,13 +80,17 @@ const LandingPage = memo(({ onShowLogin, onShowSignup }) => {
   const handleShowLogin = () => {
     if (onShowLogin) {
       onShowLogin();
-  }
+    } else {
+      navigate('/login');
+    }
   };
 
   const handleShowSignup = () => {
     if (onShowSignup) {
       onShowSignup();
-  }
+    } else {
+      navigate('/signup');
+    }
   };
 
   return (

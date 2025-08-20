@@ -1,48 +1,29 @@
-import React from 'react'
-import { Layout } from 'antd'
-import { Outlet } from 'react-router-dom'
+"use client"
+
+import React, { memo } from "react"
+import { Layout, Grid } from "antd"
 
 const { Content } = Layout
+const { useBreakpoint } = Grid
 
-const AuthLayout = () => {
+const AuthLayout = memo(function AuthLayout({ left, children }) {
+  const screens = useBreakpoint()
+  const isDesktop = screens.lg
+
   return (
-    <Layout style={{ minHeight: '100vh', background: '#f0f2f5' }}>
-      <Content style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        padding: '24px'
-      }}>
-        <div style={{
-          width: '100%',
-          maxWidth: '400px',
-          background: '#fff',
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          padding: '32px'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <h1 style={{ 
-              color: '#3498db', 
-              margin: 0,
-              fontSize: '28px',
-              fontWeight: 600
-            }}>
-              EHC Training Hub
-            </h1>
-            <p style={{ 
-              color: '#666', 
-              margin: '8px 0 0 0',
-              fontSize: '14px'
-            }}>
-              Plateforme de gestion de formation
-            </p>
+    <Layout style={{ minHeight: "100vh", background: "linear-gradient(120deg,#eef2ff 0%,#f0f9ff 50%,#f7fee7 100%)" }}>
+      <Content style={{ display: "grid", gridTemplateColumns: isDesktop ? "1fr 1fr" : "1fr", gap: 0 }}>
+        {isDesktop && (
+          <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", padding: "48px" }}>
+            {left}
           </div>
-          <Outlet />
+        )}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: isDesktop ? "64px" : "24px" }}>
+          {children}
         </div>
       </Content>
     </Layout>
   )
-}
+})
 
 export default AuthLayout

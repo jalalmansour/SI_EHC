@@ -115,12 +115,7 @@ const ActorsSection = memo(() => {
             >
               <Card
                 className={`h-full bg-gradient-to-br ${actor.bgGradient} border-0 shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden`}
-                bodyStyle={{
-                  padding: '32px 24px',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
+                styles={{ body: { padding: '32px 24px', height: '100%', display: 'flex', flexDirection: 'column' } }}
               >
                 {/* Background decoration */}
                 <div className="absolute top-0 right-0 w-20 h-20 opacity-10">

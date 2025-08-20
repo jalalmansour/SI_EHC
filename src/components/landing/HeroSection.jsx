@@ -150,7 +150,7 @@ const HeroSection = memo(() => {
           >
             <Card
               className="w-full max-w-md h-80 md:h-96 shadow-2xl border-0 overflow-hidden"
-              bodyStyle={{ padding: 0, height: '100%' }}
+              styles={{ body: { padding: 0, height: '100%' } }}
             >
               <div className="relative h-full bg-gradient-to-br from-white to-gray-50 flex items-center justify-center">
                 <img

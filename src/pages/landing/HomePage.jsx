@@ -1,4 +1,5 @@
 import React, { useState, memo, lazy, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import {
@@ -64,6 +65,7 @@ const LoadingSpinner = () => (
 );
 
 const HomePage = memo(() => {
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [heroRef, heroInView] = useInView({ threshold: 0.1, triggerOnce: true });
   const [featuresRef, featuresInView] = useInView({ threshold: 0.1, triggerOnce: true });
@@ -126,6 +128,7 @@ const HomePage = memo(() => {
               <Button
                 variant="outline"
                 className="border-gray-300 text-gray-700 hover:bg-teal-50 hover:border-teal-300 bg-transparent"
+                onClick={() => navigate('/login')}
               >
                 Se connecter
               </Button>
@@ -136,6 +139,7 @@ const HomePage = memo(() => {
                 type="primary"
                 className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 border-0 shadow-lg"
                 icon={<RocketOutlined />}
+                onClick={() => navigate('/signup')}
               >
                 Demande devis
               </Button>
