@@ -1,0 +1,74 @@
+{
+  "name": "EHC Formation Hub",
+  "short_name": "EHC Formation",
+  "description": "Plateforme moderne de gestion des formations professionnelles",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#3498db",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "fr",
+  "categories": ["business", "education", "productivity"],
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/modern-training-dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard de formation moderne"
+    },
+    {
+      "src": "/training-dashboard-analytics.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Analytics et rapports"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard RRH",
+      "short_name": "RRH",
+      "description": "Accéder au dashboard RRH",
+      "url": "/rrh/dashboard",
+      "icons": [
+        {
+          "src": "/images/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Mes Formations",
+      "short_name": "Formations",
+      "description": "Voir mes formations",
+      "url": "/employee/formations",
+      "icons": [
+        {
+          "src": "/images/logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
+}
