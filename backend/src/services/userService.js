@@ -47,11 +47,31 @@ const deleteUser = async (userId) => {
     }
 };
 
+/**
+ * Overwrites the direct permissions for a specific user.
+ * @param {number} userId - The ID of the user to modify.
+ * @param {Array<number>} permissionIds - An array of Permission IDs to assign. An empty array will remove all direct permissions.
+ * @returns {Promise<void>}
+ */
+const setDirectPermissions = async (userId, permissionIds) => {
+    // 1. Find the user to ensure they exist.
+    const user = await userModel.findById(userId);
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+
+    // 2. Use Sequelize's "setter" method for many-to-many associations.
+    // This is a powerful method that automatically handles the join table.
+    // It will add new entries and remove any that are not in the provided array.
+    await user.setDirectPermissions(permissionIds);
+};
+
 
 const userService = {
     getUserProfile,
     updateUser,
-    deleteUser
+    deleteUser,
+    setDirectPermissions,
 }
 
 export default userService;

@@ -42,11 +42,28 @@ const deleteUser = catchAsync(async (req, res) => {
     response.noContent(res);
 });
 
+/**
+ * Handles the PUT /api/users/:id/permissions request.
+ * Sets the direct permissions for a user.
+ */
+const setUserPermissions = catchAsync(async (req, res) => {
+    const userId = req.params.id;
+    const { permissionIds } = req.body; // Expects an array of IDs in the body
+
+    if (!Array.isArray(permissionIds)) {
+        response.badRequest(res, null, "permissionIds must be an array.");
+    }
+
+    await userService.setDirectPermissions(userId, permissionIds);
+    response.success(res, null, "User permissions updated successfully.");
+});
+
 
 const userController = {
     getUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    setUserPermissions
  }
 
 export default userController;

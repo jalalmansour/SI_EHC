@@ -17,8 +17,18 @@ User.hasMany(VerificationToken, { foreignKey: "userId", as: "verificationTokens"
 VerificationToken.belongsTo(User, { foreignKey: "userId", as: "user" });
 
 // Role <-> Permission
-Role.belongsToMany(Permission, { through: 'RolePermissions' });
-Permission.belongsToMany(Role, { through: 'RolePermissions' });
+Role.belongsToMany(Permission, { through: 'RolePermissions', as: 'permissions' });
+Permission.belongsToMany(Role, { through: 'RolePermissions', as: 'roles' });
+
+// User <-> Permission (Direct Permissions)
+User.belongsToMany(Permission, {
+    through: 'UserPermissions', // The name of the join table to be created
+    as: 'directPermissions'     // A clear alias for your queries
+});
+Permission.belongsToMany(User, {
+    through: 'UserPermissions',
+    as: 'usersWithDirectPermission'
+});
 
 // User <-> Department
 User.belongsTo(Department, { foreignKey: "departmentId", as: "department" });

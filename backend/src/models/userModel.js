@@ -51,16 +51,25 @@ const findByEmail = async (email) => {
 const findByIdWithPermissions = async (id) => {
     return User.findByPk(id, {
         attributes: { exclude: ["password", "refreshToken"] },
-        include: {
+        include: [{
             model: Role,
             as: "role",
             attributes: ["name"], // Get the role's name
+
             include: { // Nested include to get the permissions for the role
                 model: Permission,
+                as: 'permissions',
                 attributes: ['name'], // We only need the permission name (e.g., 'users:create')
-                through: { attributes: [] } // Crucial: Excludes the join table (RolePermissions) from the result
+                through: {attributes: []} // Crucial: Excludes the join table (RolePermissions) from the result
+            },
+        },
+            {
+                model: Permission,
+                as: 'directPermissions',
+                attributes: ['name'],
+                through: { attributes: [] } // Exclude the UserPermissions join table
             }
-        }
+        ]
     });
 };
 

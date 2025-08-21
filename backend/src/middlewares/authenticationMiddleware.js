@@ -22,6 +22,8 @@ export const authenticateUser = (req, res, next) => {
 
         // 3. Attach userId to the request object for use in subsequent controllers
         req.userId = decoded.userId;
+        req.userRole = decoded.role;
+        req.userPermissions = decoded.permissions || [];
 
         // Proceed to the next middleware or route handler
         next();

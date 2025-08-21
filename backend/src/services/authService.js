@@ -10,7 +10,6 @@ import mailingService from "./mailingService";
 import verificationTokenModel from "../models/verificationTokenModel";
 import authSchema from "../validations/authSchema";
 import appConfig from "../config/appConfig";
-import role from "../schemas/role";
 
 // --- Helper to generate access & refresh tokens ---
 const generateTokens = (userId) => ({
@@ -57,35 +56,45 @@ const registerUser = async (data) => {
 // --- Login user ---
 const loginUser = async (data) => {
     const { email, password } = data;
-    // Step 1: Find the user by email to get their password hash for comparison
-    const user = await userModel.findByEmail(email);
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-        throw new AppError("Invalid credentials.", 401);
+    // Step 1: Find the user by email. This query MUST include the password for comparison.
+    const userWithPassword = await userModel.findByEmail(email);
+
+    // Step 2: Validate the user's existence and password.
+    if (!userWithPassword || !(await bcrypt.compare(password, userWithPassword.password))) {
+        throw new AppError("Invalid email or password.", 401);
     }
 
-    // Step 2: Password is valid. Now, fetch the user again with their full permissions.
-    const fullUserWithPermissions = await userModel.findByIdWithPermissions(user.id);
+    // Step 3: Password is valid. Now, fetch the user AGAIN, but this time with all permissions.
+    const fullUser = await userModel.findByIdWithPermissions(userWithPassword.id);
 
-    // Step 3: Extract the permission names into a simple array.
-    // Safely check if Role and Permissions exist to prevent errors.
-    const roleInstance = fullUserWithPermissions.role;
-    const permissions = roleInstance?.Permissions?.map(p => p.name) || [];
-    const roleName = roleInstance ? roleInstance.name : null;
+    if (!fullUser) {
+        throw new AppError("Could not retrieve user profile.", 500);
+    }
 
-    // Step 4: Generate tokens
-    const tokens = generateTokens(user.id);
+    // Step 4: Combine permissions from the user's role and their direct assignments.
+    const rolePermissions = fullUser.role?.permissions?.map(p => p.name) || [];
+    const directPermissions = fullUser.directPermissions?.map(p => p.name) || [];
 
-    // Step 5: Return the full payload, now including the permissions array.
+    // Use a Set to create a unique, combined list of all permissions.
+    const combinedPermissions = [...new Set([...rolePermissions, ...directPermissions])];
+
+    // Step 5: Generate the authentication tokens.
+    const tokens = generateTokens(fullUser.id, fullUser.role?.name, combinedPermissions);
+
+    // Step 6: Return the final, sanitized payload.
+    // The `fullUser` object from `findByIdWithPermissions` is already public-safe.
+    const publicUser = fullUser.toJSON();
+
+    if (publicUser.role) {
+        delete publicUser.role.permissions;
+    }
+    delete publicUser.directPermissions; // Clean up the response
+    publicUser.permissions = combinedPermissions; // Add the final combined list
+
     return {
         tokens,
-        user: {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName, // Including firstName for the dashboard welcome message
-            role: roleName,
-            permissions: permissions
-        }
+        user: publicUser
     };
 };
 

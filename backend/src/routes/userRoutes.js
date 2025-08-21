@@ -1,7 +1,8 @@
 // src/routes/user.ts
 import { Router } from "express";
 import userController from "@controllers/userController";
-import { authenticateUser } from "@middlewares/authMiddleware";
+import {authenticateUser} from "../middlewares/authenticationMiddleware";
+import {authorizeUser} from "../middlewares/authorizationMiddleware";
 
 const router = Router();
 
@@ -16,6 +17,13 @@ router.put(
     "/:id",
     authenticateUser,       // 1. Middleware: Protect the route
     userController.updateUser  // 2. Controller: Get the authenticated user's info
+);
+
+router.put(
+    "/:id/permissions",
+    authenticateUser,
+    authorizeUser(['ADMIN']), // Only an ADMIN can change permissions
+    userController.setUserPermissions
 );
 
 router.delete(

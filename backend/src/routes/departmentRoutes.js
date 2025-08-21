@@ -1,48 +1,54 @@
 import { Router } from "express";
 import { departmentController } from "@controllers/departmentController";
 import { validateBody } from "@middlewares/validationMiddleware";
-import { authenticateUser } from "@middlewares/authMiddleware";
+import { authenticateUser } from "@middlewares/authenticationMiddleware";
 import departmentSchema from "../validations/departmentSchema";
+
+// You will also need to import your authorization middleware here
+import { authorizeUser } from "@middlewares/authorizationMiddleware";
 
 const router = Router();
 
-// --- All department routes are protected and require authentication ---
+// --- All department routes are protected by authentication ---
+// This middleware runs first for every request to this router.
 router.use(authenticateUser);
 
-// good idea save for later
-// --- You could add role-based authorization here for all routes ---
-// router.use(authorizeUser(['ADMIN', 'RRH'])); // Example: Only Admins and HR can manage departments
 
 // POST /api/departments - Create a new department
 router.post(
     "/",
-    validateBody(departmentSchema.create),   // Validate the request body
-    departmentController.createDepartment    // Handle creation
+    authorizeUser('departments:create'),
+    validateBody(departmentSchema.create),
+    departmentController.createDepartment
 );
 
 // GET /api/departments - Get a list of all departments
 router.get(
     "/",
-    departmentController.getAllDepartments   // Handle fetching all
+    authorizeUser('departments:read'),
+    departmentController.getAllDepartments
 );
 
 // GET /api/departments/:id - Get a single department by its ID
 router.get(
     "/:id",
-    departmentController.getDepartmentById   // Handle fetching one
+    authorizeUser('departments:read'),
+    departmentController.getDepartmentById
 );
 
 // PUT /api/departments/:id - Update an existing department
 router.put(
     "/:id",
-    validateBody(departmentSchema.update),   // Validate the request body
-    departmentController.updateDepartment    // Handle the update
+    authorizeUser('departments:update'),
+    validateBody(departmentSchema.update),
+    departmentController.updateDepartment
 );
 
-// DELETE /api/thanks/:id - Delete a department
+// DELETE /api/departments/:id - Delete a department (Corrected path)
 router.delete(
     "/:id",
-    departmentController.deleteDepartment    // Handle deletion
+    authorizeUser('departments:delete'),
+    departmentController.deleteDepartment
 );
 
 export default router;
