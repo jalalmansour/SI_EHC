@@ -1,9 +1,8 @@
-import api from './api.js'
+import {axiosPrivate} from "./axios.js";
 
 export const certificationService = {
   getCertifications: async () => {
-    const response = await api.get('/certifications')
-    return response
+      return await axiosPrivate().get('/certifications')
   },
 }
 

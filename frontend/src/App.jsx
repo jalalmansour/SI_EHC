@@ -1,10 +1,10 @@
 "use client"
 
-import { lazy, Suspense, useState, useEffect } from "react"
+import { lazy, Suspense, useEffect } from "react"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { Spin } from "antd"
 import AppShell from "./layouts/AppShell.jsx";
-import DashboardShell from "./layouts/DashboardShell.jsx";
+import AuthenticatedShell from "./layouts/AuthenticatedShell.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx"
 const DashboardRRH = lazy(() => import("./pages/rrh/DashboardRRH.jsx"))
 
@@ -22,13 +22,11 @@ const DemandeDevisPreview = lazy(() => import("./pages/landing/DemandeDevisPrevi
 const NotFound = lazy(() => import("./pages/NotFound.jsx"))
 
 export default function App() {
-  // No internal React gate; index.html handles the first-frame loader
   useEffect(() => {
     // As a backup, signal readiness if not already hidden
     window.dispatchEvent(new Event('app-ready'))
   }, [])
 
-  console.log("Rendering main app with routing")
   return (
     <BrowserRouter>
       <AppShell>
@@ -54,7 +52,7 @@ export default function App() {
             {/* Protected Dashboard */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
-                <DashboardShell />
+                <AuthenticatedShell />
               </ProtectedRoute>
             }> 
               

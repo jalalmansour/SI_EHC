@@ -1,9 +1,8 @@
-import api from './api.js'
+import {axiosPrivate} from "./axios.js";
 
 export const evaluationService = {
   getEvaluations: async () => {
-    const response = await api.get('/evaluations')
-    return response
+      return await axiosPrivate().get('/evaluations')
   },
 }
 

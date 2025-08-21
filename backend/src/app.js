@@ -16,7 +16,7 @@ export const createApp = () => {
     // --- Middlewares ---
     // Enable Cross-Origin Resource Sharing (CORS) with specific options
     app.use(cors({
-        origin: 'http://localhost:5173', // Your frontend development URL
+        origin: 'http://localhost:3000', // Your frontend development URL
         methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
         credentials: true,  // Allow cookies to be sent
         allowedHeaders: ["Content-Type", "Authorization"] // Explicitly allow these headers
