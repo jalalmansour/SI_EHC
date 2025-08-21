@@ -3,9 +3,10 @@
 import { lazy, Suspense, useState, useEffect } from "react"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { Spin } from "antd"
-import { AppShell } from "./layouts/AppShell.jsx"
-import { DashboardShell } from "./layouts/DashboardShell.jsx"
+import AppShell from "./layouts/AppShell.jsx";
+import DashboardShell from "./layouts/DashboardShell.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx"
+const DashboardRRH = lazy(() => import("./pages/rrh/DashboardRRH.jsx"))
 
 const LandingPage = lazy(() => import("./pages/LandingPage.jsx"))
 const Login = lazy(() => import("./pages/auth/Login.jsx"))
@@ -16,11 +17,8 @@ const DemandeDevisSuccess = lazy(() => import("./pages/landing/DemandeDevisSucce
 const DemandeDevisDashboard = lazy(() => import("./pages/landing/DemandeDevisDashboard.jsx"))
 const DemandeDevisPreview = lazy(() => import("./pages/landing/DemandeDevisPreview.jsx"))
 
-const Overview = lazy(() => import("./pages/dashboard/Overview.jsx"))
-const Reports = lazy(() => import("./pages/dashboard/Reports.jsx"))
-const Library = lazy(() => import("./pages/dashboard/Library.jsx"))
-const Training = lazy(() => import("./pages/dashboard/Training.jsx"))
-const Profile = lazy(() => import("./pages/Profile.jsx"))
+
+
 const NotFound = lazy(() => import("./pages/NotFound.jsx"))
 
 export default function App() {
@@ -35,11 +33,13 @@ export default function App() {
     <BrowserRouter>
       <AppShell>
         <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}><Spin size="large" /></div>}>
+       
           <Routes>
-            {/* Public */}
+              <Route path="/dashboard/rrh" element={<DashboardShell><DashboardRRH /></DashboardShell>} />
+               {/* Public - LandingPage en premier */}
             <Route index element={<LandingPage />} />
             <Route path="/home" element={<LandingPage />} />
-            
+              
             {/* Authentication Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -57,11 +57,8 @@ export default function App() {
                 <DashboardShell />
               </ProtectedRoute>
             }> 
-              <Route index element={<Overview />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="library" element={<Library />} />
-              <Route path="training" element={<Training />} />
-              <Route path="profile" element={<Profile />} />
+              
+              
             </Route>
 
             {/* Legacy fallbacks */}
