@@ -1,9 +1,8 @@
-import api from './api.js'
+import {axiosPrivate} from "./axios.js";
 
 export const libraryService = {
   getLibrary: async () => {
-    const response = await api.get('/library')
-    return response
+      return await axiosPrivate().get('/library')
   },
 }
 

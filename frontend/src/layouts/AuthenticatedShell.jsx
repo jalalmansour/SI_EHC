@@ -3,9 +3,9 @@
 import { Outlet } from "react-router-dom"
 import DashboardLayout from "../components/layouts/dashboard-layout.jsx"
 
-export function DashboardShell() {
+export function AuthenticatedShell() {
   return (
-    <DashboardLayout userRole="user" userName="Utilisateur">
+    <DashboardLayout>
       <Outlet />
     </DashboardLayout>
   )

@@ -3,24 +3,20 @@
 import { useState } from "react"
 import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
-import { Layout, Menu, Avatar, Dropdown, Button, theme, Badge } from "antd"
+import { Layout, theme } from "antd"
 import {
   DashboardOutlined,
   UserOutlined,
   SettingOutlined,
   LogoutOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  BellOutlined,
   TeamOutlined,
   BookOutlined,
   BarChartOutlined,
   BankOutlined,
 } from "@ant-design/icons"
-import { logout } from "@/redux/slices/authSlice.js"
-import { ThemeSwitcher } from "../../ui/ThemeSwitcher.jsx"
 import { Topbar } from "../../ui/Topbar.jsx"
 import { SideNav } from "../../ui/SideNav.jsx"
+import {logout} from "../../redux/thunks/authThunks.js";
 
 const { Header, Sider, Content } = Layout
 const { useToken } = theme
@@ -29,7 +25,6 @@ export default function DashboardLayout({
   children,
   userRole,
   userName = "Admin EHC",
-  userAvatar,
 }) {
   const [collapsed, setCollapsed] = useState(false)
   const { token } = useToken()
@@ -56,6 +51,7 @@ export default function DashboardLayout({
     // For example, using window.location or React Router
     // window.location.href = `/${userRole}/${key}`
   }
+
 
   const handleUserMenuClick = ({ key }) => {
     switch (key) {
@@ -198,6 +194,7 @@ export default function DashboardLayout({
       danger: true,
     },
   ]
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">

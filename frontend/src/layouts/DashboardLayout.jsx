@@ -20,7 +20,7 @@ import {
 } from "@ant-design/icons"
 import { useSelector, useDispatch } from "react-redux"
 import { useNavigate, useLocation } from "react-router-dom"
-import { logout } from "../redux/slices/authSlice"
+import {logout} from "../redux/thunks/authThunks.js";
 
 const { Header, Sider, Content } = Layout
 const { Text } = Typography

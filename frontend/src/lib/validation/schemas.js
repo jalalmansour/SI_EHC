@@ -82,11 +82,3 @@ export const trainingRequestSchema = z.object({
     .min(20, 'La justification doit contenir au moins 20 caractères')
     .max(500, 'La justification ne peut pas dépasser 500 caractères')
 });
-
-
-
-// Export type inference helpers
-
-export type ProfileFormData = z.infer<typeof profileSchema>;
-export type TrainingRequestFormData = z.infer<typeof trainingRequestSchema>;
-

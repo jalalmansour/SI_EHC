@@ -5,13 +5,18 @@ import App from './App.jsx'
 import store from './redux/store.js'
 import './assets/styles/globals.css'
 import './App.css'
+import {setupInterceptors} from "./services/axios.js";
+import { App as AntdApp} from 'antd';
+
+setupInterceptors(); // no dispatch here, only attaches interceptors once
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
-
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+        <AntdApp>
+          <App />
+        </AntdApp>
     </Provider>
   </React.StrictMode>
 )

@@ -1,16 +1,29 @@
-import { memo } from 'react'
-import { useSelector } from 'react-redux'
-import { Navigate } from 'react-router-dom'
-import { selectIsAuthenticated } from '@/redux/slices/authSlice.js'
+import { memo, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Navigate } from 'react-router-dom';
+import { fetchMe } from '../../redux/thunks/authThunks.js';
+import {Spin} from "antd";
 
 function ProtectedRoute({ children }) {
-  const isAuthenticated = useSelector(selectIsAuthenticated)
+    const dispatch = useDispatch();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
+    const { isAuthenticated, user, isLoading } = useSelector(state => state.auth);
 
-  return children
+    useEffect(() => {
+        if (isAuthenticated && !user) {
+            dispatch(fetchMe());
+        }
+    }, [dispatch, isAuthenticated, user]);
+
+    if (isLoading) {
+        return <Spin />;
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
+
+    return children;
 }
 
-export default memo(ProtectedRoute)
+export default memo(ProtectedRoute);
