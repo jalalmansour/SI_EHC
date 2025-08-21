@@ -1,6 +1,34 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { authService } from '../../services/authService.js'
 
+// Helper function to safely handle localStorage operations
+const safeLocalStorage = {
+  getItem: (key) => {
+    try {
+      const item = localStorage.getItem(key)
+      return item ? JSON.parse(item) : null
+    } catch (error) {
+      console.error(`Error parsing ${key} from localStorage:`, error)
+      localStorage.removeItem(key) // Clear corrupted data
+      return null
+    }
+  },
+  setItem: (key, value) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value))
+    } catch (error) {
+      console.error(`Error saving ${key} to localStorage:`, error)
+    }
+  },
+  removeItem: (key) => {
+    try {
+      localStorage.removeItem(key)
+    } catch (error) {
+      console.error(`Error removing ${key} from localStorage:`, error)
+    }
+  }
+}
+
 // Async thunks
 export const login = createAsyncThunk(
   'auth/login',
@@ -27,9 +55,9 @@ export const logout = createAsyncThunk(
 )
 
 const initialState = {
-  user: null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
+  user: safeLocalStorage.getItem('user'),
+  token: null, // Tokens are now in HTTP-only cookies
+  isAuthenticated: !!safeLocalStorage.getItem('user'),
   loading: false,
   error: null,
 }
@@ -56,10 +84,10 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false
         state.user = action.payload.user
-        state.token = action.payload.token
+        state.token = null // Tokens are in HTTP-only cookies
         state.isAuthenticated = true
-        localStorage.setItem('token', action.payload.token)
-        localStorage.setItem('user', JSON.stringify(action.payload.user))
+        // Only store user data in localStorage, not tokens
+        safeLocalStorage.setItem('user', action.payload.user)
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false
@@ -72,8 +100,8 @@ const authSlice = createSlice({
         state.isAuthenticated = false
         state.roles = []
         state.permissions = []
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
+        safeLocalStorage.removeItem('user')
+        // Cookies will be cleared by the backend logout endpoint
       })
   },
 })

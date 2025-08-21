@@ -4,6 +4,9 @@ import jwt from "jsonwebtoken";
 import authConfig from "@config/authConfig";
 import { AppError } from "@utils/errors";
 import { userModel } from "@models/userModel";
+import { ehcuserModel } from "@models/master/ehcuserModel";
+import { companyModel } from "@models/master/companyModel";
+import { Sequelize, QueryTypes } from 'sequelize';
 import { roleModel } from "@models/roleModel";
 import { generatePassword, generateToken } from "@utils/security";
 import mailingService from "./mailingService";
@@ -12,9 +15,10 @@ import authSchema from "../validations/authSchema";
 import appConfig from "../config/appConfig";
 
 // --- Helper to generate access & refresh tokens ---
-const generateTokens = (userId) => ({
-    accessToken: jwt.sign({ userId }, authConfig.secret, { expiresIn: authConfig.secret_expires_in }),
-    refreshToken: jwt.sign({ userId }, authConfig.refresh_secret, { expiresIn: authConfig.refresh_secret_expires_in }),
+// Include role and permissions in the token payload so middleware can read them.
+const generateTokens = (userId, role = null, permissions = []) => ({
+    accessToken: jwt.sign({ userId, role, permissions }, authConfig.secret, { expiresIn: authConfig.secret_expires_in }),
+    refreshToken: jwt.sign({ userId, role, permissions }, authConfig.refresh_secret, { expiresIn: authConfig.refresh_secret_expires_in }),
 });
 
 // --- Register a new user ---
@@ -57,45 +61,96 @@ const registerUser = async (data) => {
 const loginUser = async (data) => {
     const { email, password } = data;
 
-    // Step 1: Find the user by email. This query MUST include the password for comparison.
+    // 1) Check master EhcUser first (superadmins)
+    const ehcUser = await ehcuserModel.findByEmail(email);
+    if (ehcUser) {
+        if (await bcrypt.compare(password, ehcUser.password)) {
+            console.log(`[auth] authenticated via master ehcusers: ${email}`);
+            const tokens = generateTokens(ehcUser.id, ehcUser.role || 'superadmin', []);
+            const publicUser = {
+                id: ehcUser.id,
+                username: ehcUser.username,
+                email: ehcUser.email,
+                role: ehcUser.role || 'superadmin',
+                permissions: [],
+            };
+            return { tokens, user: publicUser };
+        }
+        // If EhcUser exists but password mismatch, continue to tenant search (do not early-throw to allow tenant users with same email)
+        console.log(`[auth] master ehcuser found but password mismatch for ${email}`);
+    }
+
+    // 2) Check tenant DBs dynamically using company records
+    const companies = await companyModel.findAll();
+    for (const company of companies) {
+        // Skip companies without DB credentials
+        if (!company.db_name || !company.db_user) continue;
+
+        const tenantSequelize = new Sequelize(company.db_name, company.db_user, company.db_password, {
+            host: company.db_host || 'localhost',
+            dialect: 'mysql',
+            logging: false,
+        });
+
+        try {
+            // use a raw query to avoid reusing schema that's bound to the master sequelize instance
+            const rows = await tenantSequelize.query(
+                'SELECT * FROM Users WHERE email = ? LIMIT 1',
+                { replacements: [email], type: QueryTypes.SELECT }
+            );
+
+        if (rows && rows.length > 0) {
+                const tenantUser = rows[0];
+                if (await bcrypt.compare(password, tenantUser.password)) {
+            console.log(`[auth] authenticated via tenant ${company.db_name}: ${email}`);
+            // Authenticated tenant user
+            const tokens = generateTokens(tenantUser.id, tenantUser.role || 'user', []);
+                    const publicUser = {
+                        id: tenantUser.id,
+                        username: tenantUser.username || tenantUser.email,
+                        email: tenantUser.email,
+                        role: tenantUser.role || 'user',
+                        permissions: [],
+                        tenant: { id: company.id, db_name: company.db_name }
+                    };
+                    await tenantSequelize.close();
+                    return { tokens, user: publicUser };
+                }
+                // if password mismatches, continue to next company
+            }
+        } catch (err) {
+            // ignore tenant DB errors (unreachable, offline) and continue
+            console.warn(`Tenant DB check failed for ${company.db_name}:`, err.message);
+        } finally {
+            try { await tenantSequelize.close(); } catch (e) {}
+        }
+    }
+
+    // 3) Fallback: check master 'User' table in case it's used locally
     const userWithPassword = await userModel.findByEmail(email);
+    if (userWithPassword) {
+        if (await bcrypt.compare(password, userWithPassword.password)) {
+            console.log(`[auth] authenticated via local User table: ${email}`);
+            const fullUser = await userModel.findByIdWithPermissions(userWithPassword.id);
+            if (!fullUser) throw new AppError("Could not retrieve user profile.", 500);
 
-    // Step 2: Validate the user's existence and password.
-    if (!userWithPassword || !(await bcrypt.compare(password, userWithPassword.password))) {
-        throw new AppError("Invalid email or password.", 401);
+            const rolePermissions = fullUser.role?.permissions?.map(p => p.name) || [];
+            const directPermissions = fullUser.directPermissions?.map(p => p.name) || [];
+            const combinedPermissions = [...new Set([...rolePermissions, ...directPermissions])];
+
+            const tokens = generateTokens(fullUser.id, fullUser.role?.name, combinedPermissions);
+
+            const publicUser = fullUser.toJSON();
+            if (publicUser.role) delete publicUser.role.permissions;
+            delete publicUser.directPermissions;
+            publicUser.permissions = combinedPermissions;
+
+            return { tokens, user: publicUser };
+        }
     }
 
-    // Step 3: Password is valid. Now, fetch the user AGAIN, but this time with all permissions.
-    const fullUser = await userModel.findByIdWithPermissions(userWithPassword.id);
-
-    if (!fullUser) {
-        throw new AppError("Could not retrieve user profile.", 500);
-    }
-
-    // Step 4: Combine permissions from the user's role and their direct assignments.
-    const rolePermissions = fullUser.role?.permissions?.map(p => p.name) || [];
-    const directPermissions = fullUser.directPermissions?.map(p => p.name) || [];
-
-    // Use a Set to create a unique, combined list of all permissions.
-    const combinedPermissions = [...new Set([...rolePermissions, ...directPermissions])];
-
-    // Step 5: Generate the authentication tokens.
-    const tokens = generateTokens(fullUser.id, fullUser.role?.name, combinedPermissions);
-
-    // Step 6: Return the final, sanitized payload.
-    // The `fullUser` object from `findByIdWithPermissions` is already public-safe.
-    const publicUser = fullUser.toJSON();
-
-    if (publicUser.role) {
-        delete publicUser.role.permissions;
-    }
-    delete publicUser.directPermissions; // Clean up the response
-    publicUser.permissions = combinedPermissions; // Add the final combined list
-
-    return {
-        tokens,
-        user: publicUser
-    };
+    // Not found in either table
+    throw new AppError("Invalid email or password.", 401);
 };
 
 // --- Refresh access token ---

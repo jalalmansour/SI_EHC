@@ -1,10 +1,13 @@
 // src/models/index.js
 import sequelize from "../db"
 import User from "./User";
-import Role from "./Role";
+import EhcUser from "./master/ehcuser";
+import Role from "./role";
 import VerificationToken from "./verificationToken";
 import Permission from "./permission";
 import Department from "./department";
+import Company from "./master/company";
+import TenantInvite from "./master/tenantInvite";
 
 // Define associations AFTER importing both models
 
@@ -34,4 +37,12 @@ Permission.belongsToMany(User, {
 User.belongsTo(Department, { foreignKey: "departmentId", as: "department" });
 Department.hasMany(User, { foreignKey: "departmentId", as: "users" });
 
-export { sequelize, User, Role, VerificationToken, Permission, Department };
+// Company <-> Department
+Department.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+Company.hasMany(Department, { foreignKey: 'companyId', as: 'departments' });
+
+// Company <-> TenantInvite
+TenantInvite.belongsTo(Company, { foreignKey: 'tenantId', as: 'company' });
+Company.hasMany(TenantInvite, { foreignKey: 'tenantId', as: 'invites' });
+
+export { sequelize, User, Role, VerificationToken, Permission, Department, EhcUser, Company, TenantInvite };

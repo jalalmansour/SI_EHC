@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, Input, Button, Card, Typography, message, Checkbox, Alert, Divider, Tag, Row, Col } from 'antd'
@@ -76,7 +76,6 @@ const floatingVariants = {
 }
 
 function Login() {
-  const [form] = Form.useForm()
   const navigate = useNavigate()
   const dispatch = useDispatch()
   
@@ -91,7 +90,14 @@ function Login() {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm({ resolver: zodResolver(schema) })
+  } = useForm({ 
+    resolver: zodResolver(schema),
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: false
+    }
+  })
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -213,52 +219,78 @@ function Login() {
 
                 {/* Enhanced Form */}
                 <div className="px-6 pb-6">
-                  <Form layout="vertical" onFinish={handleSubmit(onSubmit)} form={form} size="large">
-                    <Form.Item label="Email" validateStatus={errors.email ? 'error' : ''} help={errors.email?.message}>
-                      <Input
-                        prefix={<UserOutlined />}
-                        placeholder="votre@email.com"
-                        size="large"
-                        className="rounded-lg border-gray-200 hover:border-blue-300 focus:border-blue-500 transition-colors duration-200"
-                        {...control.register('email')}
+                  <form onSubmit={handleSubmit(onSubmit)}>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                      <Controller
+                        name="email"
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            prefix={<UserOutlined />}
+                            placeholder="votre@email.com"
+                            size="large"
+                            className="rounded-lg border-gray-200 hover:border-blue-300 focus:border-blue-500 transition-colors duration-200"
+                            status={errors.email ? 'error' : ''}
+                          />
+                        )}
                       />
-                    </Form.Item>
+                      {errors.email && <div className="text-red-500 text-sm mt-1">{errors.email.message}</div>}
+                    </div>
 
-                    <Form.Item label="Mot de passe" validateStatus={errors.password ? 'error' : ''} help={errors.password?.message}>
-                      <Input.Password
-                        prefix={<LockOutlined />}
-                        placeholder="Votre mot de passe"
-                        size="large"
-                        className="rounded-lg border-gray-200 hover:border-blue-300 focus:border-blue-500 transition-colors duration-200"
-                        iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-                        {...control.register('password')}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                      <Controller
+                        name="password"
+                        control={control}
+                        render={({ field }) => (
+                          <Input.Password
+                            {...field}
+                            prefix={<LockOutlined />}
+                            placeholder="Votre mot de passe"
+                            size="large"
+                            className="rounded-lg border-gray-200 hover:border-blue-300 focus:border-blue-500 transition-colors duration-200"
+                            iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+                            status={errors.password ? 'error' : ''}
+                          />
+                        )}
                       />
-                    </Form.Item>
+                      {errors.password && <div className="text-red-500 text-sm mt-1">{errors.password.message}</div>}
+                    </div>
 
-                    <Form.Item>
+                    <div className="mb-6">
                       <div className="flex justify-between items-center">
-                        <Checkbox {...control.register('rememberMe')} className="text-gray-600">
-                          Se souvenir de moi
-                        </Checkbox>
+                        <Controller
+                          name="rememberMe"
+                          control={control}
+                          render={({ field: { value, onChange } }) => (
+                            <Checkbox 
+                              checked={value} 
+                              onChange={(e) => onChange(e.target.checked)}
+                              className="text-gray-600"
+                            >
+                              Se souvenir de moi
+                            </Checkbox>
+                          )}
+                        />
                         <Link to="/forgot-password" className="text-blue-600 hover:text-blue-700 transition-colors duration-200">
                           Mot de passe oublié ?
                         </Link>
                       </div>
-                    </Form.Item>
+                    </div>
 
-                    <Form.Item>
-                      <Button 
-                        type="primary" 
-                        htmlType="submit" 
-                        size="large" 
-                        loading={loading} 
-                        block
-                        className="h-12 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 border-0 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
-                      >
-                        Se connecter
-                      </Button>
-                    </Form.Item>
-                  </Form>
+                    <Button 
+                      type="primary" 
+                      htmlType="submit" 
+                      size="large" 
+                      loading={loading} 
+                      block
+                      className="h-12 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 border-0 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      Se connecter
+                    </Button>
+                  </form>
 
                   <Divider className="text-gray-400">ou</Divider>
 
