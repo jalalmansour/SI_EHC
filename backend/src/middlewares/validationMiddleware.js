@@ -1,6 +1,10 @@
 import { ZodError } from "zod";
 import * as response from "@utils/response";
 
+/**
+ * Middleware to validate the request body against a Zod schema.
+ * It returns a validation error response if the body is invalid.
+ */
 export const validateBody = (schema) => {
     return (req, res, next) => {
         try {
@@ -9,7 +13,6 @@ export const validateBody = (schema) => {
         } catch (error) {
             if (error instanceof ZodError) {
                 const formattedErrors = {};
-
                 error.issues.forEach((err) => {
                     const field = err.path.join(".");
                     if (!formattedErrors[field]) {
@@ -17,12 +20,37 @@ export const validateBody = (schema) => {
                     }
                     formattedErrors[field].push(err.message);
                 });
-
                 return response.validationErrors(res, formattedErrors);
             }
-
             console.error("An unexpected validation error occurred:", error);
             return response.error(res, null, "Invalid request data");
+        }
+    };
+};
+
+/**
+ * Middleware to validate the request parameters against a Zod schema.
+ * It returns a validation error response if the parameters are invalid.
+ */
+export const validateParams = (schema) => {
+    return (req, res, next) => {
+        try {
+            schema.parse(req.params);
+            next();
+        } catch (error) {
+            if (error instanceof ZodError) {
+                const formattedErrors = {};
+                error.issues.forEach((err) => {
+                    const field = err.path.join(".");
+                    if (!formattedErrors[field]) {
+                        formattedErrors[field] = [];
+                    }
+                    formattedErrors[field].push(err.message);
+                });
+                return response.validationErrors(res, formattedErrors);
+            }
+            console.error("An unexpected validation error occurred:", error);
+            return response.error(res, null, "Invalid request parameters");
         }
     };
 };

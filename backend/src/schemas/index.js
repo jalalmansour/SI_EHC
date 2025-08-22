@@ -1,37 +1,91 @@
-// src/models/index.js
-import sequelize from "../db"
-import User from "./User";
-import Role from "./Role";
-import VerificationToken from "./verificationToken";
-import Permission from "./permission";
-import Department from "./department";
+import sequelize from '../db';
 
-// Define associations AFTER importing both models
+// Import all Sequelize model files. The order of these imports doesn't matter.
+import User from './user';
+import Role from './role';
+import Permission from './permission';
+import Department from './department';
+import Budget from './budget';
+import TrainingDomain from './trainingDomain';
+import BudgetAllocation from './budgetAllocation';
 
-// User <-> Role
-User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
-Role.hasMany(User, { foreignKey: "roleId", as: "users" });
+// --- Define All Model Associations ---
+// This section ensures all models are linked correctly before the app starts.
 
-// User <-> VerificationToken
-User.hasMany(VerificationToken, { foreignKey: "userId", as: "verificationTokens"});
-VerificationToken.belongsTo(User, { foreignKey: "userId", as: "user" });
+// User and Role
+User.belongsTo(Role, {
+    foreignKey: 'roleId',
+    as: 'role'
+});
+Role.hasMany(User, {
+    foreignKey: 'roleId',
+    as: 'users'
+});
 
-// Role <-> Permission
-Role.belongsToMany(Permission, { through: 'RolePermissions', as: 'permissions' });
-Permission.belongsToMany(Role, { through: 'RolePermissions', as: 'roles' });
+// User and Department
+User.belongsTo(Department, {
+    foreignKey: 'departmentId',
+    as: 'department'
+});
+Department.hasMany(User, {
+    foreignKey: 'departmentId',
+    as: 'users'
+});
 
-// User <-> Permission (Direct Permissions)
+// User and Permission (Many-to-Many for direct permissions)
 User.belongsToMany(Permission, {
-    through: 'UserPermissions', // The name of the join table to be created
-    as: 'directPermissions'     // A clear alias for your queries
+    through: 'UserPermissions',
+    as: 'directPermissions',
+    foreignKey: 'userId',
 });
 Permission.belongsToMany(User, {
     through: 'UserPermissions',
-    as: 'usersWithDirectPermission'
+    as: 'users',
+    foreignKey: 'permissionId'
 });
 
-// User <-> Department
-User.belongsTo(Department, { foreignKey: "departmentId", as: "department" });
-Department.hasMany(User, { foreignKey: "departmentId", as: "users" });
+// Role and Permission (Many-to-Many)
+Role.belongsToMany(Permission, {
+    through: 'RolePermissions',
+    as: 'permissions',
+    foreignKey: 'roleId',
+});
+Permission.belongsToMany(Role, {
+    through: 'RolePermissions',
+    as: 'roles',
+    foreignKey: 'permissionId'
+});
 
-export { sequelize, User, Role, VerificationToken, Permission, Department };
+// Budget and its Allocations (One-to-Many)
+Budget.hasMany(BudgetAllocation, {
+    foreignKey: 'budgetId',
+    as: 'allocations'
+});
+BudgetAllocation.belongsTo(Budget, {
+    foreignKey: 'budgetId',
+    as: 'budget'
+});
+
+// TrainingDomain and its Allocations (One-to-Many)
+TrainingDomain.hasMany(BudgetAllocation, {
+    foreignKey: 'trainingDomainId',
+    as: 'allocations'
+});
+BudgetAllocation.belongsTo(TrainingDomain, {
+    foreignKey: 'trainingDomainId',
+    as: 'domain'
+});
+
+// --- Export Models and Sequelize Instance ---
+// This allows other parts of your application (like controllers and models)
+// to access the defined models and the database connection.
+export {
+    sequelize,
+    User,
+    Role,
+    Permission,
+    Department,
+    Budget,
+    TrainingDomain,
+    BudgetAllocation
+};
