@@ -127,3 +127,4 @@ export const created = (res, data, message = "resource created successfully") =>
 export const noContent = (res) => {
     res.status(204).send();
 };
+

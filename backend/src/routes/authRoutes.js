@@ -13,7 +13,6 @@ const router = Router();
 
 router.post(
     "/register",
-    authenticateUser,
     authorizeUser('users:create'),
     validateBody(authSchema.register),
     authController.register
