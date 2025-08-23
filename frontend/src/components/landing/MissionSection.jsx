@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { Card, Row, Col, Typography, Button, Space } from "antd";
@@ -68,6 +69,7 @@ const MissionSection = memo(() => {
     { value: "15+", label: "Années d'expertise" },
     { value: "200+", label: "Entreprises clientes" }
   ];
+  const navigate = useNavigate();
 
   return (
     <motion.div
@@ -106,7 +108,7 @@ const MissionSection = memo(() => {
 
             <motion.div variants={fadeInUp}>
               <Card
-                className="p-6 mb-8 bg-gradient-to-br from-green-50 to-teal-50 border-0 shadow-lg"
+                className="p-6 mb-6 bg-gradient-to-br from-green-50 to-teal-50 border-0 shadow-lg"
                 bodyStyle={{ padding: '32px 24px' }}
               >
                 <Title level={4} className="text-2xl font-semibold mb-6 text-gray-900">
@@ -127,6 +129,24 @@ const MissionSection = memo(() => {
                   ))}
                 </Space>
               </Card>
+              
+              {/* Bouton placé en bas de la carte (à l'extérieur) */}
+              <motion.div
+                variants={fadeInUp}
+                className="text-center"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<ArrowRightOutlined />}
+                  className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 border-0 shadow-lg px-8 py-6 h-auto text-base font-semibold w-full"
+                  onClick={() => navigate("/demande-devis")}
+                >
+                  Découvrir EHC Formation
+                </Button>
+              </motion.div>
             </motion.div>
           </motion.div>
         </Col>
@@ -189,23 +209,6 @@ const MissionSection = memo(() => {
                   </Paragraph>
                 </motion.div>
               ))}
-            </motion.div>
-
-            {/* CTA Button */}
-            <motion.div
-              variants={fadeInUp}
-              className="mt-12"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                type="primary"
-                size="large"
-                icon={<ArrowRightOutlined />}
-                className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 border-0 shadow-lg px-8 py-6 h-auto text-base font-semibold"
-              >
-                Découvrir INGÉNIA
-              </Button>
             </motion.div>
           </motion.div>
         </Col>
