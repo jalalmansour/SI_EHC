@@ -5,18 +5,16 @@ import App from './App.jsx'
 import store from './redux/store.js'
 import './assets/styles/globals.css'
 import './App.css'
-import {setupInterceptors} from "./services/axios.js";
-import { App as AntdApp} from 'antd';
-
-setupInterceptors(); // no dispatch here, only attaches interceptors once
+import './assets/styles-dashborad/main.css'
+import './assets/styles-dashborad/responsive.css'
+import "./assets/styles-dashborad/ehc-dashboard.css";//C:\Users\HP\Documents\projet SI\SI_EHC\frontend\src\assets\styles-dashborad\main.css
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
+
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-        <AntdApp>
-          <App />
-        </AntdApp>
+      <App />
     </Provider>
   </React.StrictMode>
 )

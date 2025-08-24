@@ -1,8 +1,9 @@
-import {axiosPrivate} from "./axios.js";
+import api from './api.js'
 
 export const planningService = {
   getPlanning: async () => {
-      return await axiosPrivate.get('/planning')
+    const response = await api.get('/planning')
+    return response
   },
 }
 

@@ -403,7 +403,7 @@ function Register() {
               <motion.div
                 variants={itemVariants}
                 whileHover="hover"
-                variantes={cardVariants}
+                variants={cardVariants}
                 className="mb-6"
               >
                 <Card 
@@ -469,7 +469,7 @@ function Register() {
               <motion.div
                 variants={itemVariants}
                 whileHover="hover"
-                variantes={cardVariants}
+                variants={cardVariants}
               >
                 <Card 
                   variant="borderless"

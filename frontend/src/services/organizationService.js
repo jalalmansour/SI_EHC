@@ -1,14 +1,16 @@
-import {axiosPrivate} from "./axios.js";
+import api from './api.js'
 
 export const organizationService = {
   // Get organizations
   getOrganizations: async () => {
-      return await axiosPrivate.get('/organizations')
+    const response = await api.get('/organizations')
+    return response
   },
 
   // Get users
   getUsers: async () => {
-      return await axiosPrivate.get('/users')
+    const response = await api.get('/users')
+    return response
   },
 }
 

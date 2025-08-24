@@ -1,9 +1,10 @@
-import {axiosPrivate} from "./axios.js";
+import api from './api.js'
 
 export const budgetService = {
   // Get budgets
   getBudgets: async () => {
-      return await axiosPrivate().get('/budgets')
+    const response = await api.get('/budgets')
+    return response
   },
 }
 

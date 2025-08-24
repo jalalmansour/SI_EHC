@@ -1,5 +1,5 @@
 "use client"
-import DashboardLayout from "@/components/layouts/dashboard-layout"
+// removed dashboard layout
 import UserProfileForm from "@/components/forms/user-profile-form"
 
 export default function ProfileFormateur() {

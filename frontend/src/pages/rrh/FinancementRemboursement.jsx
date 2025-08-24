@@ -506,20 +506,40 @@ const FinancementRemboursement = () => {
         <Row gutter={[24, 24]} className="mb-6">
           <Col xs={24} lg={12}>
             <Card title="Processus de Remboursement">
-              <Timeline>
-                <Timeline.Item dot={<CheckCircleOutlined className="text-green-500" />} color="green">
-                  <div className="font-medium">1. Formation réalisée</div>
-                  <div className="text-sm text-gray-500">Affichage automatique au lendemain</div>
-                </Timeline.Item>
-                <Timeline.Item dot={<FileTextOutlined className="text-blue-500" />} color="blue">
-                  <div className="font-medium">2. Instruction du dossier</div>
-                  <div className="text-sm text-gray-500">Qualification par le RRH</div>
-                </Timeline.Item>
-                <Timeline.Item dot={<DollarOutlined className="text-purple-500" />} color="purple">
-                  <div className="font-medium">3. Dépôt et suivi</div>
-                  <div className="text-sm text-gray-500">Traitement final</div>
-                </Timeline.Item>
-              </Timeline>
+              <Timeline
+                items={[
+                  {
+                    dot: <CheckCircleOutlined className="text-green-500" />,
+                    color: "green",
+                    children: (
+                      <>
+                        <div className="font-medium">1. Formation réalisée</div>
+                        <div className="text-sm text-gray-500">Affichage automatique au lendemain</div>
+                      </>
+                    )
+                  },
+                  {
+                    dot: <FileTextOutlined className="text-blue-500" />,
+                    color: "blue",
+                    children: (
+                      <>
+                        <div className="font-medium">2. Instruction du dossier</div>
+                        <div className="text-sm text-gray-500">Qualification par le RRH</div>
+                      </>
+                    )
+                  },
+                  {
+                    dot: <DollarOutlined className="text-purple-500" />,
+                    color: "purple",
+                    children: (
+                      <>
+                        <div className="font-medium">3. Dépôt et suivi</div>
+                        <div className="text-sm text-gray-500">Traitement final</div>
+                      </>
+                    )
+                  }
+                ]}
+              />
             </Card>
           </Col>
 

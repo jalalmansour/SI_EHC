@@ -1,10 +1,10 @@
-import {axiosPrivate} from './axios.js'
+import api from './api.js'
 
 export const devisService = {
   // Submit a devis request
   submitDevisRequest: async (data) => {
     try {
-      const response = await axiosPrivate.post('/devis/submit', data)
+      const response = await api.post('/devis/submit', data)
       return response
     } catch (error) {
       // If backend is not available, simulate success for demo purposes
@@ -25,7 +25,7 @@ export const devisService = {
   // Get devis summary data
   getDevisSummary: async () => {
     try {
-      const response = await axiosPrivate.get('/devis/summary')
+      const response = await api.get('/devis/summary')
       return response
     } catch (error) {
       // If backend is not available, return mock data for demo purposes

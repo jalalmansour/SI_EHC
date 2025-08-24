@@ -125,6 +125,7 @@ const HomePage = memo(() => {
             ))}
 
 
+
           </nav>
 
           {/* Mobile Menu Button */}
@@ -290,7 +291,7 @@ const HomePage = memo(() => {
               >
                 <div className="relative h-full bg-gradient-to-br from-white to-gray-50 flex items-center justify-center">
                   <img
-                    src="/images/dashboard-reference.png"
+                    src="/images/training-dashboard-analytics.png"
                     alt="Interface moderne INGÉNIA"
                     className="w-full h-full object-cover rounded-lg"
                     loading="lazy"
