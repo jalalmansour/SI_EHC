@@ -209,7 +209,7 @@ function Login() {
                                     <div className="text-center">
                                         <Paragraph className="text-gray-600 mb-0">
                                             Pas encore de compte ?{' '}
-                                            <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">Créer un compte</Link>
+                                            <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">Demande de devis</Link>
                                         </Paragraph>
                                     </div>
                                 </div>
