@@ -23,7 +23,7 @@ adminRouter.use("/auth", authRouter);
 // --- 2. Protected Admin Routes ---
 // All routes after this point will require a valid admin JWT.
 
-// adminRouter.use(authenticateAdmin);
+adminRouter.use(authenticateAdmin);
 
 // admin routes
 adminRouter.post("/admins/register", authAdminController.register);
