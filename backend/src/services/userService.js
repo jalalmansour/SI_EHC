@@ -1,77 +1,100 @@
 import { userModel } from "@models/userModel";
-import {AppError} from "../utils/errors";
+import { AppError } from "../utils/errors";
 
 /**
- * Retrieves the public profile for a given user ID.
- * This service acts as an intermediary between the controller and the model.
- * @param id - The ID of the user.
- * @returns The user's public profile object.
- * @throws Will throw an error with the message "User not found" if the user does not exist.
+ * Retrieves the public profile for the currently authenticated user.
+ * @param {object} req - The Express request object, containing `req.models` and the user's ID in `req.userId`.
+ * @returns {Promise<Object>} The user's public profile object.
+ * @throws {AppError} If the user is not found.
  */
-const getUserProfile = async (id) => {
-    // 1. Call the model layer to fetch the user's public data.
-    // The model guarantees this data is safe and contains no password.
-    const userProfile = await userModel.findPublicById(id);
+const getAuthenticatedUser = async (req) => {
+    const { models, userId: id } = req;
+    const userProfile = await userModel.findPublicById(models, id);
 
-    // 2. Handle the business logic case where the user is not found.
     if (!userProfile) {
         throw new AppError("User not found", 404);
     }
-
-    // 3. If found, return the clean profile.
     return userProfile;
 };
 
-const updateUser = async (id, data) => {
-    const user = userModel.findPublicById(id);
 
-    if (!user) {
+const getUserProfile = async (req) => {
+    const { models } = req;
+    const { id } = req.params;
+    const userProfile = await userModel.findById(models, id);
+    if (!userProfile) {
         throw new AppError("User not found", 404);
     }
-
-    return await userModel.updateUser(id, data);
+    return userProfile;
 }
 
 /**
- * Deletes a user by their ID.
- * @param {number} userId - The ID of the user to delete.
- * @returns {Promise<void>} Resolves if the deletion is successful.
+ * Updates the profile for the currently authenticated user.
+ * @param {object} req - The Express request object, containing `req.models`, `req.userId`, and the update data in `req.body`.
+ * @returns {Promise<Object>} The updated user profile.
  * @throws {AppError} If the user is not found.
  */
-const deleteUser = async (userId) => {
-    const wasDeleted = await userModel.remove(userId);
+const updateUser = async (req) => {
+    const { models } = req;
+    const { id } = req.params;
+    const data = req.body;
 
-    // Throw a 404 Not Found error if user not found.
+    console.log(id);
+    // The updateUser model function should return the updated user object.
+    const updatedUser = await userModel.updateUser(models, id, data);
+
+    if (!updatedUser) {
+        throw new AppError("User not found", 404);
+    }
+    return updatedUser;
+};
+
+/**
+ * Deletes a user specified by an ID in the request parameters.
+ * @param {object} req - The Express request object, containing `req.models` and the user ID in `req.params.id`.
+ * @returns {Promise<void>}
+ * @throws {AppError} If the user is not found.
+ */
+const deleteUser = async (req) => {
+    const { models } = req;
+    const { id } = req.params; // Assuming ID comes from route params like /users/:id
+    const wasDeleted = await userModel.remove(models, id);
+
     if (!wasDeleted) {
-        throw new AppError(httpStatus.NOT_FOUND, "User not found");
+        throw new AppError("User not found", 404);
     }
 };
 
 /**
  * Overwrites the direct permissions for a specific user.
- * @param {number} userId - The ID of the user to modify.
- * @param {Array<number>} permissionIds - An array of Permission IDs to assign. An empty array will remove all direct permissions.
+ * @param {object} req - The Express request object, containing `req.models`, the user ID in `req.params.id`, and permission IDs in `req.body.permissionIds`.
  * @returns {Promise<void>}
+ * @throws {AppError} If the user is not found.
  */
-const setDirectPermissions = async (userId, permissionIds) => {
-    // 1. Find the user to ensure they exist.
-    const user = await userModel.findById(userId);
+const setDirectPermissions = async (req) => {
+    const { models } = req;
+    const { id } = req.params;
+    const { permissionIds } = req.body;
+
+    if (!Array.isArray(permissionIds)) {
+        // This should ideally be handled in a validation middleware,
+        // but throwing an error here is also valid.
+        throw new AppError("permissionIds must be an array.", 400);
+    }
+
+    const user = await userModel.findById(models, id);
     if (!user) {
         throw new AppError("User not found", 404);
     }
-
-    // 2. Use Sequelize's "setter" method for many-to-many associations.
-    // This is a powerful method that automatically handles the join table.
-    // It will add new entries and remove any that are not in the provided array.
     await user.setDirectPermissions(permissionIds);
 };
-
 
 const userService = {
     getUserProfile,
     updateUser,
     deleteUser,
     setDirectPermissions,
-}
+    getAuthenticatedUser
+};
 
 export default userService;

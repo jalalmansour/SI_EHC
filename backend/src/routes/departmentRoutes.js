@@ -17,6 +17,7 @@ router.use(authenticateUser);
 // POST /api/departments - Create a new department
 router.post(
     "/",
+    authorizeUser(['RRH']),
     authorizeUser('departments:create'),
     validateBody(departmentSchema.create),
     departmentController.createDepartment

@@ -5,22 +5,15 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { Spin } from "antd"
 import { AppShell } from "./layouts/AppShell.jsx"
 import { AuthenticatedShell } from "./layouts/AuthenticatedShell.jsx"
-import ProtectedRoute from "./components/common/ProtectedRoute.jsx"
+import ProtectedRoute from "./components/common/security/ProtectedRoute.jsx"
+import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard.jsx";
+import RRHDashboard from "./pages/rrh/RRHDashboard.jsx";
 
-const LandingPage = lazy(() => import("./pages/LandingPage.jsx"))
+const LandingPage = lazy(() => import("./pages/home/LandingPage.jsx"))
 const Login = lazy(() => import("./pages/auth/Login.jsx"))
 const Register = lazy(() => import("./pages/auth/Register.jsx"))
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword.jsx"))
-const DemandeDevis = lazy(() => import("./pages/landing/DemandeDevis.jsx"))
-const DemandeDevisSuccess = lazy(() => import("./pages/landing/DemandeDevisSuccess.jsx"))
-const DemandeDevisDashboard = lazy(() => import("./pages/landing/DemandeDevisDashboard.jsx"))
-const DemandeDevisPreview = lazy(() => import("./pages/landing/DemandeDevisPreview.jsx"))
 
-const Overview = lazy(() => import("./pages/dashboard/Overview.jsx"))
-const Reports = lazy(() => import("./pages/dashboard/Reports.jsx"))
-const Library = lazy(() => import("./pages/dashboard/Library.jsx"))
-const Training = lazy(() => import("./pages/dashboard/Training.jsx"))
-const Profile = lazy(() => import("./pages/Profile.jsx"))
 const NotFound = lazy(() => import("./pages/NotFound.jsx"))
 
 export default function App() {
@@ -29,6 +22,11 @@ export default function App() {
     window.dispatchEvent(new Event('app-ready'))
   }, [])
 
+    const ProtectedLayout = () => (
+        <ProtectedRoute>
+            <AuthenticatedShell />
+        </ProtectedRoute>
+    );
   return (
     <BrowserRouter>
       <AppShell>
@@ -43,23 +41,10 @@ export default function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             
-            {/* Demande de Devis Routes */}
-            <Route path="/demande-devis" element={<DemandeDevis />} />
-            <Route path="/demande-devis/success" element={<DemandeDevisSuccess />} />
-            <Route path="/demande-devis/dashboard" element={<DemandeDevisDashboard />} />
-            <Route path="/demande-devis/preview" element={<DemandeDevisPreview />} />
-
             {/* Protected Dashboard */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <AuthenticatedShell />
-              </ProtectedRoute>
-            }> 
-              <Route index element={<Overview />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="library" element={<Library />} />
-              <Route path="training" element={<Training />} />
-              <Route path="profile" element={<Profile />} />
+            <Route element={<ProtectedLayout/>}>
+              <Route path="/admin/dashboard" element={<SuperAdminDashboard />} />
+              <Route path="/rrh/dashboard" element={<RRHDashboard />} />
             </Route>
 
             {/* Legacy fallbacks */}

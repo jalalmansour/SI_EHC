@@ -1,142 +1,203 @@
-// src/services/auth.service.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import authConfig from "@config/authConfig";
 import { AppError } from "@utils/errors";
 import { userModel } from "@models/userModel";
 import { roleModel } from "@models/roleModel";
+import { getAdminModels, getTenantConnection } from "@utils/connectionManager";
 import { generatePassword, generateToken } from "@utils/security";
 import mailingService from "./mailingService";
-import verificationTokenModel from "../models/verificationTokenModel";
-import authSchema from "../validations/authSchema";
 import appConfig from "../config/appConfig";
+import verificationTokenModel from "../models/admin/verificationTokenModel";
+import {tenantUserModel} from "../models/admin/tenantUserModel";
 
-// --- Helper to generate access & refresh tokens ---
-const generateTokens = (userId) => ({
-    accessToken: jwt.sign({ userId }, authConfig.secret, { expiresIn: authConfig.secret_expires_in }),
-    refreshToken: jwt.sign({ userId }, authConfig.refresh_secret, { expiresIn: authConfig.refresh_secret_expires_in }),
-});
-
-// --- Register a new user ---
-const registerUser = async (data) => {
-    const { email, roleId } = data;
-
-    const existingUser = await userModel.findByEmail(email);
-    if (existingUser) throw new AppError("Email is already in use.", 400);
-
-    const role = await roleModel.findById(roleId);
-    if (!role) throw new AppError("Role doesn't exist.", 404);
-
-    const tempPassword = generatePassword();
-    data.password = await bcrypt.hash(tempPassword, 10);
-    const newUser = await userModel.createUser(data);
-
-    const verificationToken = generateToken(32);
-
-    await verificationTokenModel.createVerificationToken({
-        userId: newUser.id,
-        token: verificationToken,
-        type: "PASSWORD_RESET",
-        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
-    });
-
-    const verificationUrl = `${appConfig.host}:${appConfig.port}/set-password?token=${verificationToken}`;
-
-    await mailingService.sendMail({
-        to: newUser.dataValues.email,
-        subject: "Set Your Password",
-        text: `Hello ${newUser.firstName},\n\n` +
-            `Welcome! Set your password using this link:\n${verificationUrl}\n\n` +
-            `This link expires in 1 hour.\n\nBest regards,\nThe Team`
-    });
-
-    return { user: newUser };
+/**
+ * Generates JWTs with a consistent payload.
+ * @param {object} user - The user object from the tenant DB.
+ * @param {number} tenantId - The ID of the tenant.
+ * @param {Array<string>} permissions - The final combined list of permissions.
+ * @returns {{accessToken: string, refreshToken: string}}
+ */
+const generateTokens = (user, tenantId, permissions) => {
+    const accessTokenPayload = { userId: user.id, tenantId, role: user.role?.name, permissions };
+    const refreshTokenPayload = { userId: user.id, tenantId };
+    return {
+        accessToken: jwt.sign(accessTokenPayload, authConfig.secret, { expiresIn: authConfig.secret_expires_in }),
+        refreshToken: jwt.sign(refreshTokenPayload, authConfig.refresh_secret, { expiresIn: authConfig.refresh_secret_expires_in }),
+    };
 };
 
-// --- Login user ---
-const loginUser = async (data) => {
+/**
+ * --- PUBLIC: Authenticates a user against their specific tenant database ---
+ */
+const loginUser = async (req) => {
+    const data = req.body;
     const { email, password } = data;
+    const adminModels = getAdminModels();
 
-    // Step 1: Find the user by email. This query MUST include the password for comparison.
-    const userWithPassword = await userModel.findByEmail(email);
+    const tenantUser = await adminModels.TenantUser.findOne({ where: { email } });
+    if (!tenantUser) throw new AppError("Invalid email or password.", 401);
 
-    // Step 2: Validate the user's existence and password.
+    const { tenantId } = tenantUser;
+    const connectionData = await getTenantConnection(tenantId);
+    if (!connectionData) throw new AppError("Could not connect to tenant database.", 500);
+    const tenantModels = connectionData.models;
+
+    const userWithPassword = await userModel.findByEmail(tenantModels, email);
     if (!userWithPassword || !(await bcrypt.compare(password, userWithPassword.password))) {
         throw new AppError("Invalid email or password.", 401);
     }
 
-    // Step 3: Password is valid. Now, fetch the user AGAIN, but this time with all permissions.
-    const fullUser = await userModel.findByIdWithPermissions(userWithPassword.id);
+    const fullUser = await userModel.findByIdWithPermissions(tenantModels, userWithPassword.id);
+    if (!fullUser) throw new AppError("Could not retrieve user profile.", 500);
 
-    if (!fullUser) {
-        throw new AppError("Could not retrieve user profile.", 500);
-    }
-
-    // Step 4: Combine permissions from the user's role and their direct assignments.
     const rolePermissions = fullUser.role?.permissions?.map(p => p.name) || [];
     const directPermissions = fullUser.directPermissions?.map(p => p.name) || [];
+    const combinedPermissions = [...new Set([...rolePermissions, ...directPermissions])];
+    const tokens = generateTokens(fullUser, tenantId, combinedPermissions);
 
-    // Use a Set to create a unique, combined list of all permissions.
+    const publicUser = fullUser.toJSON();
+    if (publicUser.role) delete publicUser.role.permissions;
+    delete publicUser.directPermissions;
+    publicUser.permissions = combinedPermissions;
+
+    return { tokens, user: publicUser };
+};
+
+/**
+ * --- PROTECTED: Registers a new user within a specific tenant's context ---
+ */
+const registerUser = async (req) => {
+    const data = req.body;
+    const { email, roleId, tenantId, ...restOfUserData } = data;
+    const adminModels = getAdminModels();
+
+    if (!tenantId) throw new AppError("Tenant ID is required.", 400);
+    const connectionData = await getTenantConnection(tenantId);
+    if (!connectionData) throw new AppError(`Tenant with ID ${tenantId} not found.`, 404);
+
+    const tenantModels = connectionData.models;
+
+    if (await userModel.findByEmail(tenantModels, email) || await tenantUserModel.findByEmail(adminModels, email)) {
+        throw new AppError("Email is already in use.", 409);
+    }
+    if (!(await roleModel.findById(tenantModels, roleId))) {
+        throw new AppError("Role does not exist for this tenant.", 404);
+    }
+
+    const hashedPassword = await bcrypt.hash(generatePassword(), 10);
+    let newUserInTenantDb = null;
+    try {
+        newUserInTenantDb = await userModel.createUser(tenantModels, {
+            ...restOfUserData, email, roleId, password: hashedPassword,
+        });
+
+        const newTenantUser = await adminModels.TenantUser.create({
+            email: newUserInTenantDb.email,
+            tenantId,
+            userIdInTenant: newUserInTenantDb.id,
+        });
+
+        const verificationToken = generateToken(32);
+        await adminModels.VerificationToken.create({
+            tenantUserId: newTenantUser.id,
+            token: verificationToken,
+            type: "PASSWORD_SETUP",
+            expiresAt: new Date(Date.now() + 3600 * 1000), // 1 hour
+        });
+
+        const verificationUrl = `${appConfig.host}/set-password?token=${verificationToken}`;
+        await mailingService.sendMail({
+            to: newUserInTenantDb.email,
+            subject: "Set Your Password",
+            text: `Welcome! Please set your password using this link:\n${verificationUrl}`
+        });
+
+    } catch (error) {
+        if (newUserInTenantDb?.id) {
+            await userModel.remove(tenantModels, newUserInTenantDb.id);
+        }
+        throw new AppError(`Failed to register user: ${error.message}`, 500);
+    }
+
+    return { user: newUserInTenantDb };
+};
+
+/**
+ * --- PUBLIC: Refreshes an access token ---
+ */
+const refreshAccessToken = async (req) => {
+    const { refreshToken: tokenFromCookie } = req.cookies;
+    if (!tokenFromCookie) {
+        throw new AppError("Refresh token is missing.", 401);
+    }
+
+    let payload;
+    try {
+        payload = jwt.verify(tokenFromCookie, authConfig.refresh_secret);
+    } catch (error) {
+        throw new AppError("Invalid or expired refresh token.", 401);
+    }
+
+    const { tenantId, userId } = payload;
+    if (!tenantId || !userId) {
+        throw new AppError("Invalid refresh token payload.", 401);
+    }
+
+    const connectionData = await getTenantConnection(tenantId);
+    if (!connectionData) {
+        throw new AppError("Tenant not found.", 401);
+    }
+
+    const tenantModels = connectionData.models;
+    const fullUser = await userModel.findByIdWithPermissions(tenantModels, userId);
+    if (!fullUser) {
+        throw new AppError("User not found.", 401);
+    }
+
+    const rolePermissions = fullUser.role?.permissions?.map(p => p.name) || [];
+    const directPermissions = fullUser.directPermissions?.map(p => p.name) || [];
     const combinedPermissions = [...new Set([...rolePermissions, ...directPermissions])];
 
-    // Step 5: Generate the authentication tokens.
-    const tokens = generateTokens(fullUser.id, fullUser.role?.name, combinedPermissions);
+    const { accessToken, refreshToken } = generateTokens(fullUser, tenantId, combinedPermissions);
 
-    // Step 6: Return the final, sanitized payload.
-    // The `fullUser` object from `findByIdWithPermissions` is already public-safe.
-    const publicUser = fullUser.toJSON();
+    return { accessToken, refreshToken };
+};
+/**
+ * --- PUBLIC: Sets a password using a verification token ---
+ */
+const setPassword = async (req) => {
+    const { token } = req.query;
+    const {password} = req.body;
+    const adminModels = getAdminModels();
 
-    if (publicUser.role) {
-        delete publicUser.role.permissions;
+    const storedToken = await verificationTokenModel.findByToken(adminModels, token);
+    if (!storedToken || storedToken.expiresAt < new Date()) {
+        throw new AppError("Token is invalid or has expired.", 401);
     }
-    delete publicUser.directPermissions; // Clean up the response
-    publicUser.permissions = combinedPermissions; // Add the final combined list
 
-    return {
-        tokens,
-        user: publicUser
-    };
+    const { userIdInTenant, tenantId } = storedToken.tenantUser;
+    const connectionData = await getTenantConnection(tenantId);
+    if (!connectionData) throw new AppError("Associated tenant not found.", 404);
+    const tenantModels = connectionData.models;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const updatedUser = await userModel.updateUser(tenantModels, userIdInTenant, { password: hashedPassword });
+    if (!updatedUser) throw new AppError("User associated with this token not found.", 404);
+
+    await storedToken.destroy();
+
+    return { message: "Password has been set successfully." };
 };
 
-// --- Refresh access token ---
-const refreshAccessToken = async (userId, refreshToken) => {
-    const user = await userModel.findById(userId);
-    if (!user || !user.refreshToken) throw new AppError("Refresh token not found", 401);
-    if (user.refreshToken !== refreshToken) throw new AppError("Invalid refresh token", 401);
 
-    return generateTokens(userId).accessToken;
-};
+const verifyToken = async (req) => {
+    const { token } = req.body;
+    const adminModels = getAdminModels();
 
-// --- Set password using verification token ---
-const setPassword = async (token, data) => {
-    const storedToken = await verificationTokenModel.findByToken(token);
-    if (!storedToken || storedToken.token !== token) throw new AppError("Unauthorized.", 401);
-
-    await userModel.updateUser(storedToken.userId, { password: await bcrypt.hash(data.password, 10) });
-
-    return { message: "Password set successfully." };
-};
-
-// --- Reset password for authenticated user ---
-const resetPassword = async (userId, data) => {
-    const { oldPassword, newPassword } = authSchema.changePassword.parse(data);
-
-    const user = await userModel.findById(userId);
-    if (!user) throw new AppError("User not found.", 404);
-
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) throw new AppError("Old password is incorrect.", 400);
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await userModel.updateUser(userId, { password: hashedPassword });
-
-    return { message: "Password updated successfully." };
-};
-
-const verifyToken = async (token) => {
     if (!token) throw new AppError("Unauthorised", 401);
 
-    const storedToken = await verificationTokenModel.findByToken(token);
+    const storedToken = await verificationTokenModel.findByToken(adminModels, token);
 
     if (!storedToken) {
         throw new AppError("Invalid or expired token", 401);
@@ -147,7 +208,17 @@ const verifyToken = async (token) => {
         throw new AppError("Token has expired", 401);
     }
 
-    return { userId: storedToken.userId };
+    return { userId: storedToken.tenantUserId };
+};
+
+const resetPassword = async (req) => {
+    const { userId, models } = req;
+    const { newPassword } = req.body;
+    // Hash the new password and update the user in their specific tenant database.
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await userModel.updateUser(models, userId, { password: hashedPassword });
+
+    return { message: "Your password has been reset successfully." };
 };
 
 const authService = {
@@ -155,8 +226,8 @@ const authService = {
     loginUser,
     refreshAccessToken,
     setPassword,
-    resetPassword,
     verifyToken,
+    resetPassword,
 };
 
 export default authService;

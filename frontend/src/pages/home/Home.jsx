@@ -1,7 +1,7 @@
 "use client"
 
 import React, { memo } from "react"
-import LandingPage from "../LandingPage"
+import LandingPage from "./LandingPage.jsx"
 
 // Home page now uses LandingPage with all sections from landing folder
 const Home = memo(() => {

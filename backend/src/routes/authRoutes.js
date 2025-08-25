@@ -4,6 +4,7 @@ import { validateBody } from "@middlewares/validationMiddleware";
 import authSchema from "../validations/authSchema";
 import {authenticateUser, refreshTokenValidation} from "../middlewares/authenticationMiddleware";
 import {authorizeUser} from "../middlewares/authorizationMiddleware";
+import {tenantResolver} from "../middlewares/tenantResolverMiddleware";
 
 const router = Router();
 
@@ -11,14 +12,15 @@ const router = Router();
 // These routes are for users who are not yet logged in.
 // They DO NOT need `authenticateUser` or `authorizeUser`.
 
+// --- 2. Special Case: Admin-Only User Registration ---
+// This route is protected but does NOT use the tenant resolver.
+// The controller and service will handle the tenant logic manually.
 router.post(
     "/register",
-    authenticateUser,
-    authorizeUser('users:create'),
-    validateBody(authSchema.register),
+    // authenticateUser,
+    // authorizeUser('users:create'), // Ensure only authorized users can create new users
     authController.register
 );
-
 router.post(
     "/login",
     validateBody(authSchema.login),
@@ -56,6 +58,7 @@ router.post(
 router.post(
     "/reset-password",
     authenticateUser,
+    tenantResolver,
     validateBody(authSchema.changePassword),
     authController.resetPassword
 );

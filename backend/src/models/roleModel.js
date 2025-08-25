@@ -1,58 +1,60 @@
-// src/models/role.model.js
-import { Role } from "../schemas";
-
 /**
- * Retrieves all roles from the database.
- * @returns {Promise<Array>} A promise that resolves to an array of all role objects.
+ * Retrieves all roles for the current tenant.
+ * @param {object} models - Tenant-specific database models.
+ * @returns {Promise<Array>} An array of all role objects.
  */
-const findAll = async () => {
-    return await Role.findAll({
-        order: [["id", "ASC"]], // optional: always return in id order
+const findAll = async (models) => {
+    return await models.Role.findAll({
+        order: [["id", "ASC"]],
     });
 };
 
 /**
- * Finds a single role by its unique ID.
+ * Finds a single role by its unique ID for the current tenant.
+ * @param {object} models - Tenant-specific database models.
  * @param {number} id - The ID of the role to find.
- * @returns {Promise<Object|null>} A promise that resolves to the role object or null if not found.
+ * @returns {Promise<Object|null>} The role object or null if not found.
  */
-const findById = async (id) => {
-    return await Role.findByPk(id);
+const findById = async (models, id) => {
+    return await models.Role.findByPk(id);
 };
 
 /**
- * Creates a new role in the database.
+ * Creates a new role for the current tenant.
+ * @param {object} models - Tenant-specific database models.
  * @param {object} data - Role data including name and description.
  * @returns {Promise<Object>} The newly created role object.
  */
-const create = async (data) => {
+const create = async (models, data) => {
     const { name, description } = data;
-    const role = await Role.create({ name, description });
-    return role;
+    return await models.Role.create({ name, description });
 };
 
 /**
- * Updates an existing role by ID.
+ * Updates an existing role by ID for the current tenant.
+ * @param {object} models - Tenant-specific database models.
  * @param {number} id - Role ID to update.
- * @param {object} data - Fields to update (name, description).
+ * @param {object} data - Fields to update.
  * @returns {Promise<Object|null>} The updated role object, or null if not found.
  */
-const update = async (id, data) => {
-    const role = await Role.findByPk(id);
-    if (!role) return null;
-
+const update = async (models, id, data) => {
+    const role = await models.Role.findByPk(id);
+    if (!role) {
+        return null;
+    }
     await role.update(data);
     return role;
 };
 
 /**
- * Deletes a role by ID.
+ * Deletes a role by ID for the current tenant.
+ * @param {object} models - Tenant-specific database models.
  * @param {number} id - Role ID to delete.
  * @returns {Promise<boolean>} True if deleted, false if not found.
  */
-const remove = async (id) => {
-    const deleted = await Role.destroy({ where: { id } });
-    return deleted > 0;
+const remove = async (models, id) => {
+    const rowsDeleted = await models.Role.destroy({ where: { id } });
+    return rowsDeleted > 0;
 };
 
 export const roleModel = {

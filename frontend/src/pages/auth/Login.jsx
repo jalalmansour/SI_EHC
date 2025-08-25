@@ -12,8 +12,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectIsAuthenticated, selectAuthLoading } from '../../redux/slices/authSlice.js';
 import { login } from "../../redux/thunks/authThunks.js";
 import { loginSchema } from "../../lib/validation/authSchema.js"; // Adjust path if necessary
-import AuthLayout from '@/components/layouts/auth-layout/index.jsx';
-import {handleApiError} from "../../utils/errorHandler.js"; // Adjust path if necessary
+import {handleApiError} from "../../utils/errorHandler.js";
+import AuthLayout from "../../components/auth/AuthLayout.jsx";
+import {getDashboardPathForRole} from "../../utils/routeUtils.js"; // Adjust path if necessary
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -44,7 +45,6 @@ function Login() {
     const dispatch = useDispatch();
 
     const loading = useSelector(selectAuthLoading);
-    const isAuthenticated = useSelector(selectIsAuthenticated);
     const { message: messageApi } = App.useApp();
 
 
@@ -65,18 +65,16 @@ function Login() {
         }
     });
 
-    // --- Side Effects ---
-    useEffect(() => {
-        if (isAuthenticated) {
-            navigate('/dashboard');
-        }
-    }, [isAuthenticated, navigate]);
-
     // --- Submission Handler ---
     const onSubmit = async (data) => {
         try {
-            await dispatch(login(data)).unwrap();
-            message.success('Login successful!');
+            const res = await dispatch(login(data)).unwrap();
+            messageApi.success('Login successful!');
+
+            console.log(res.data);
+            // redirect based on role
+            const destination = getDashboardPathForRole(res.data?.role?.name);
+            navigate(destination, { replace: true });
         } catch (err) {
             console.log(err);
             const errorMessage = handleApiError(err, setError);

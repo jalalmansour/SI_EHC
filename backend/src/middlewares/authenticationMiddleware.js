@@ -8,28 +8,33 @@ import * as response from "@utils/response";
  * It verifies the JWT and attaches the `userId` to the request object.
  */
 export const authenticateUser = (req, res, next) => {
-    // 1. Extract the access token from the HttpOnly cookie
     const token = req.cookies.accessToken;
 
-    // If there's no token, return an unauthorized error
     if (!token) {
         return response.unauthorized(res, { message: "Access token is missing" });
     }
 
     try {
-        // 2. Verify the token using the application's secret key
         const decoded = jwt.verify(token, authConfig.secret);
 
-        // 3. Attach userId to the request object for use in subsequent controllers
+        // --- ADD THIS STRICT CHECK ---
+        // Ensure this is a tenant token by checking for the presence of a tenantId.
+        // This prevents an admin token from being used on tenant-specific routes.
+        if (!decoded.tenantId) {
+            return response.forbidden(res, { message: "Invalid token scope for this resource." });
+        }
+
+        // Attach the full decoded payload to a `user` property for clarity in controllers.
+        req.user = decoded;
+
+        // You can keep these for backward compatibility if needed.
         req.userId = decoded.userId;
         req.userRole = decoded.role;
         req.userPermissions = decoded.permissions || [];
 
-        // Proceed to the next middleware or route handler
         next();
     } catch (error) {
-        // If verification fails (e.g., token is invalid or expired), return an unauthorized error
-        console.error("Authentication failed:", error);
+        console.error("User authentication failed:", error.message);
         return response.unauthorized(res, { message: "Invalid or expired access token" });
     }
 };

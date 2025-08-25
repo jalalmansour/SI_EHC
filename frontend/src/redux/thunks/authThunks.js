@@ -48,9 +48,9 @@ export const fetchMe = createAsyncThunk(
         } catch (error) {
             // ❌ Interceptor already tried refresh
             // If still 401, session is invalid → logout
-            if (error.status === 401) {
-                dispatch(logout());
-            }
+            // if (error.status === 401) {
+            //     dispatch(logout());
+            // }
             return rejectWithValue(error);
         }
     }

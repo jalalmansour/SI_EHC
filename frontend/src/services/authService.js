@@ -6,9 +6,9 @@ export const authService = {
     login: (credentials) => {
         return axiosPublic.post('/auth/login', credentials);
     },
-    forgotPassword: (email) => {
-        return axiosPublic.post('/auth/forgot-password', { email });
-    },
+    // forgotPassword: (email) => {
+    //     return axiosPublic.post('/auth/forgot-password', { email });
+    // },
     resetPassword: (token, password) => {
         return axiosPublic.post('/auth/reset-password', { token, password });
     },
@@ -21,7 +21,7 @@ export const authService = {
         return axiosPrivate.post('/auth/register', userData);
     },
     getMe: () => {
-        return axiosPrivate.get('/user/me');
+        return axiosPrivate.get('/users/me');
     },
     logout: () => {
         return axiosPrivate.post('/auth/logout');

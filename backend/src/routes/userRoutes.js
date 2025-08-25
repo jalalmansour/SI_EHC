@@ -10,6 +10,12 @@ const router = Router();
 router.get(
     "/me",
     authenticateUser,       // 1. Middleware: Protect the route
+    userController.getAuthenticatedUser  // 2. Controller: Get the authenticated user's info
+);
+
+router.get(
+    "/:id",
+    authenticateUser,       // 1. Middleware: Protect the route
     userController.getUser  // 2. Controller: Get the authenticated user's info
 );
 

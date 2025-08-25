@@ -7,7 +7,7 @@ import { Form, Input, Button, Card, Typography, message, Alert, Divider, Tag, Ro
 import { motion, AnimatePresence } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { MailOutlined, ArrowLeftOutlined, CheckCircleOutlined, RocketOutlined, SafetyCertificateOutlined, BulbOutlined, StarOutlined } from '@ant-design/icons'
-import AuthLayout from '@/components/layouts/auth-layout/index.jsx'
+import AuthLayout from '@/components/layouts/auth-layout/AuthLayout.jsx'
 
 const { Title, Paragraph, Text } = Typography
 

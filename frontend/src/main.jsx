@@ -8,7 +8,7 @@ import './App.css'
 import {setupInterceptors} from "./services/axios.js";
 import { App as AntdApp} from 'antd';
 
-setupInterceptors(); // no dispatch here, only attaches interceptors once
+setupInterceptors();
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(

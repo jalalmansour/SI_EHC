@@ -1,17 +1,30 @@
+// routes/index.js
+
 import { Router } from "express";
 import authRoutes from "./authRoutes";
 import userRoutes from "./userRoutes";
 import departmentRoutes from "./departmentRoutes";
+import { authenticateUser } from "../middlewares/authenticationMiddleware";
+import { tenantResolver } from "../middlewares/tenantResolverMiddleware";
 
-const mainRouter = Router();
+const tenantApiRouter = Router();
 
-// Mount the authentication routes under the "/auth" path
-mainRouter.use("/auth", authRoutes);
+// --- 1. Public Tenant Routes ---
+// Handles login, registration, password reset etc. for tenant users.
+// No authentication is needed yet.
+tenantApiRouter.use("/auth", authRoutes);
 
-// Mount the user routes under the "/user" path
-mainRouter.use("/user", userRoutes);
 
-// Import the department routes
-mainRouter.use('/departments', departmentRoutes); // Mount the new routes
+// --- 2. Protected, Tenant-Specific Routes ---
+// All routes after this middleware chain are for authenticated tenant users
+// and will have their database connection resolved.
+tenantApiRouter.use(authenticateUser, tenantResolver);
 
-export default mainRouter;
+// Mount the protected routes
+tenantApiRouter.use("/users", userRoutes);
+tenantApiRouter.use("/departments", departmentRoutes);
+
+// Add other future tenant-specific routes here
+// tenantApiRouter.use('/projects', projectRoutes);
+
+export default tenantApiRouter;

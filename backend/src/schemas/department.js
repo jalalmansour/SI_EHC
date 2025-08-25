@@ -1,23 +1,26 @@
-import { DataTypes } from "sequelize";
-import sequelize from "../db";
+import { DataTypes, Model } from "sequelize";
 
-const Department = sequelize.define("Department", {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    description: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
+class Department extends Model {}
 
-}, {
-    tableName: "Departments",
-});
+export const initDepartmentModel = (sequelize) => {
+    Department.init({
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        description: {
+            type: DataTypes.TEXT,
+        },
+    }, {
+        sequelize,
+        modelName: 'Department',
+        tableName: "Departments",
+    });
 
-export default Department;
+    return Department;
+};
