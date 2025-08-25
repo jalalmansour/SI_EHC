@@ -4,6 +4,12 @@ import * as response from "@utils/response";
 import authAdminService from "@services/admin/authAdminService";
 import { catchAsync } from "@utils/catchAsync";
 
+
+const register = catchAsync(async (req, res) => {
+    const { user } = await authAdminService.registerAdmin(req);
+    return response.created(res, user, "Admin user successfully created.");
+});
+
 /**
  * Handles platform admin login.
  */
@@ -62,6 +68,7 @@ const logout = catchAsync(async (req, res) => {
 
 
 export const authAdminController = {
+    register,
     login,
     refreshToken,
     logout,

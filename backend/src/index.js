@@ -2,7 +2,6 @@ import "tsconfig-paths/register";
 import "dotenv/config";
 
 import { createApp, startServer } from "./app";
-import {sequelize} from "./schemas";
 import {getAdminConnection, initAdminConnection} from "./utils/connectionManager";
 
 (async () => {
@@ -14,7 +13,7 @@ import {getAdminConnection, initAdminConnection} from "./utils/connectionManager
         const adminConnection = getAdminConnection();
 
         // 3. Sync ONLY the models associated with the super-admin connection (Tenants, TenantUsers).
-        await adminConnection.sync({alter: true}); // Use { alter: true } for development
+        await adminConnection.sync(); // Use { alter: true } for development
         console.log("✅ Admin models synced successfully.");
 
 

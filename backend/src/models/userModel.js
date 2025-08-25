@@ -77,7 +77,6 @@ const createUser = async (models, data) => {
  * Updates a user (whitelisted fields only).
  */
 const updateUser = async (models, id, data) => {
-    console.log(models);
     const [rowsAffected] = await models.User.update(data, { where: { id } });
     if (rowsAffected > 0) {
         return await findPublicById(models, id);
