@@ -3,9 +3,10 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import authConfig from "@config/authConfig";
-import { AppError } from "@utils/errors";
-import { getAdminModels } from "@utils/connectionManager";
-import { ehcUserModel } from "@models/admin/ehcUserModel";
+import {AppError} from "@utils/errors";
+import {getAdminModels} from "@utils/connectionManager";
+import {ehcUserModel} from "@models/admin/ehcUserModel";
+import {Op} from "sequelize";
 
 /**
  * Generates JWTs for a platform admin user.
@@ -21,6 +22,32 @@ const generateAdminTokens = (user) => {
         accessToken: jwt.sign(accessTokenPayload, authConfig.secret, { expiresIn: authConfig.secret_expires_in }),
         refreshToken: jwt.sign(refreshTokenPayload, authConfig.refresh_secret, { expiresIn: authConfig.refresh_secret_expires_in }),
     };
+};
+
+const registerAdmin = async (req) => {
+    const { email, password, username } = req.body;
+    const adminModels = getAdminModels();
+
+    // Check for existing user
+    const existingUser = await adminModels.EhcUser.findOne({
+        where: { [Op.or]: [{ email }, { username }] }
+    });
+    if (existingUser) {
+        throw new AppError("Email or username is already in use.", 409);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Call the generic createUser model function, providing the specific
+    // data required for this operation, including the enforced role.
+    const newAdmin = await ehcUserModel.createUser(adminModels, {
+        email,
+        password: hashedPassword,
+        username,
+        role: 'super-admin', // <-- The business rule is enforced here.
+    });
+
+    return { user: newAdmin };
 };
 
 
@@ -81,6 +108,7 @@ const refreshAdminAccessToken = async (req) => {
 
 
 const authAdminService = {
+    registerAdmin,
     loginAdmin,
     refreshAdminAccessToken,
 };

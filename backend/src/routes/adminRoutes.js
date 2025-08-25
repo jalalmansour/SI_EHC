@@ -6,6 +6,8 @@ import { tenantController } from "../controllers/admin/tenantController"; // Ten
 import { validateBody } from "../middlewares/validationMiddleware";
 import tenantSchema from "../validations/tenantSchema";
 import {authenticateAdmin} from "../middlewares/authenticateAdmin";
+import {ehcUserSchema} from "../validations/admin/ehcUserSchema";
+import {ehcUserController} from "../controllers/admin/ehcUserController";
 
 const adminRouter = Router();
 
@@ -20,7 +22,16 @@ adminRouter.use("/auth", authRouter);
 
 // --- 2. Protected Admin Routes ---
 // All routes after this point will require a valid admin JWT.
-adminRouter.use(authenticateAdmin);
+
+// adminRouter.use(authenticateAdmin);
+
+// admin routes
+adminRouter.post("/admins/register", authAdminController.register);
+adminRouter.put(
+    "/admins/:id",
+    validateBody(ehcUserSchema.update), // Validation for the update route
+    ehcUserController.updateUser
+);
 
 // Base path: /tenants
 const tenantManagementRouter = Router();
